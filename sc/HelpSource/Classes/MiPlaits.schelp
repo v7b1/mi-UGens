@@ -1,0 +1,84 @@
+TITLE:: MiPlaits
+summary:: a macro oscillator
+categories:: UGens>Osc
+related:: Classes/Osc, Classes/MiRings, Classes/MiMu
+
+DESCRIPTION::
+A macro oscillator offering a multitude of synthesis methods.
+
+note:: This is a port of the Plaits eurorack module by link::https://mutable-instruments.net/::. Original code by Émilie Gillet::
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: pitch
+playback pitch (midi note)
+
+ARGUMENT:: engine
+chooses synthesis engine (0 -- 15):
+0:virtual_analog_engine, 1:waveshaping_engine, 2:fm_engine, 3:grain_engine, 4:additive_engine, 5:wavetable_engine, 6:chord_engine, 7:speech_engine, 8:swarm_engine, 9:noise_engine, 10:particle_engine, 11:string_engine, 12:modal_engine, 13:bass_drum_engine, 14:snare_drum_engine, 15:hi_hat_engine
+
+ARGUMENT:: harm
+harmonics parameter (0. -- 1.)
+
+ARGUMENT:: timbre
+timbre parameter (0. -- 1.)
+
+ARGUMENT:: morph
+morph parameter (0. -- 1.)
+
+ARGUMENT:: trigger
+trigger input. a non-zero value causes a internal lowpass gate to fire.
+
+ARGUMENT:: usetrigger
+use trigger flag (0 / 1)
+
+ARGUMENT:: decay
+decay rate of internal lowpass gate (0. -- 1.)
+
+ARGUMENT:: lpg_colour
+"colour" of internal lowpass gate (0. -- 1.)
+
+ARGUMENT:: mul
+set output gain
+
+
+returns::
+OUT: main signal output, AUX: carries a variant, sidekick or by-product of the main signal.
+Note: this is not necessarily conceived as a stereo output
+
+
+
+EXAMPLES::
+
+code::
+// basics
+x = { MiPlaits.ar(48, 0, mul: 0.2) }.play
+x.free
+
+// Mouse control
+{ MiPlaits.ar(48, 6, MouseX.kr(0, 1),  MouseY.kr(0,1), mul: 0.5) }.play
+
+// some talking
+{ MiPlaits.ar(MouseY.kr(24,72), 7, MouseX.kr(0, 1),  0.5, LFSaw.ar(0.11, 0, 0.5, 0.5), mul: 0.5) }.play
+
+more:
+(
+{
+	var trigger = Dust.ar( LFNoise2.ar(0.1).range(0.1, 7) );
+	var harmonics = SinOsc.ar(0.03, 0, 0.5, 0.5).range(0.0, 1.0);
+	var timbre = LFTri.ar(0.07, 0, 0.5, 0.5).range(0.0, 1.0);
+	var morph = LFTri.ar(0.11, 0, 0.5, 0.5).squared;
+
+	var pitch = Latch.ar(WhiteNoise.ar(12, 36), trigger).round;
+	var engine = Latch.ar(WhiteNoise.ar(8,8), trigger).round;
+	var sub = SinOsc.ar(pitch.midicps, 0, 0.2);
+	var mi = MiPlaits.ar( pitch, engine, harmonics, timbre, morph,
+		trigger: trigger, usetrigger: 1, decay: 0.8, lpg_colour: 0.2);
+	mi + sub
+}.play
+)
+
+::

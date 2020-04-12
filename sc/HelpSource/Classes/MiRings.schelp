@@ -1,0 +1,153 @@
+TITLE:: MiRings
+summary:: a resonator
+categories:: UGens>Filter
+related:: Classes/Filter, Classes/MiPlaits
+
+DESCRIPTION::
+A resonator based on mutable instruments' Rings module.
+
+note:: This is a port of the Rings eurorack module by link::https://mutable-instruments.net/::.
+Original code by Emilie Gillet ::
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: in
+input signal (can also be 0, if used with internal_exciter)
+
+ARGUMENT:: trig
+used to trigger internal exciter, polyphony etc.
+Trigger can be any signal.
+A trigger happens when the signal changes from non-positive to positive
+
+ARGUMENT:: pit
+pitch (midi note)
+
+ARGUMENT:: struct
+with the modal and non-linear string models, controls the inharmonicity of the spectrum
+(which directly impacts the perceived “material”).
+With the sympathetic strings model, controls the intervals between strings.
+
+ARGUMENT:: bright
+specifies the brightness and richness of the spectrum (0. -- 1.)
+
+ARGUMENT:: damp
+controls the damping rate of the sound, from 100ms to 10s (0. -- 1.)
+
+ARGUMENT:: pos
+specifies at which point the structure is excited (0. -- 1.)
+
+ARGUMENT:: model
+resonator model (0 -- 5):
+0: modal_resonator,
+1: sympathetic_string,
+2: modulated/inharmonic_string,
+3: fm_voice,
+4: sympathetic_string_quantized,
+5: string_and_reverb
+
+ARGUMENT:: poly
+polyphony, number of simultaneous voices (1 -- 4) - this also influences the number of partials generated per voice.
+more voices means less partials.
+
+ARGUMENT:: use_trig
+boolean
+
+ARGUMENT:: intern_exciter
+boolean
+
+ARGUMENT:: intern_note
+boolean
+
+ARGUMENt:: bypass
+
+
+ARGUMENT:: mul
+set output gain
+
+
+returns::
+[outL, outR]
+
+
+
+EXAMPLES::
+
+code::
+// basics
+x = {MiRings.ar(Impulse.ar(1))}.play
+y = {MiRings.ar(PinkNoise.ar(0.2),0, 40)}.play
+x.free
+y.free
+
+
+(   // sympathetic strings using internal exciter
+{
+    var trig = Dust.ar(0.3);
+    var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
+	var struct = LFNoise1.kr(0.4).range(0,1);
+
+    MiRings.ar(0, trig, pit, struct, 0.5, 0.8, 0.25, use_trig: 1, intern_exciter: 1, model:1, poly: 1)
+}.play
+)
+
+(   // inharmonic string using internal exciter
+{
+    var trig = Dust.ar(1);
+    var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
+	var struct = Latch.ar(WhiteNoise.ar(), trig).range(0,1);
+
+    MiRings.ar(0, trig, pit, struct, 0.5, 0.8, 0.25, use_trig: 1, intern_exciter: 1, model:2, poly: 2)
+}.play
+)
+
+
+more:
+(
+{
+	var trig = Dust.ar(1);
+	var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
+	var struct = LFNoise1.kr(0.4).range(0,1);
+
+	MiRings.ar(0, trig, pit, struct, 0.5, 0.7, 0.25, use_trigger: 1, intern_exciter: 1, model:5, polyphony: 4)
+}.play
+)
+
+
+// easter egg models ::::::::::
+
+(    // FM synth
+{
+	var input = Impulse.kr(6);
+	var pitch = Latch.kr(WhiteNoise.kr(), input).range(24, 48).round;
+	var position = LFNoise1.kr(0.4).range(0,0.5);
+	var brightness = LFNoise1.kr(0.5).range(0.2,0.9);
+	MiRings.ar(input, pit: pitch, bright: brightness, pos: position, damp: 0.97, poly: 2, model: 3)
+}.play
+)
+
+
+(   // chords
+{
+	var struct = LFNoise0.kr(0.2).range(0,1);
+	var bright = LFNoise2.kr(0.2).range(0.15, 1);
+	var input = PinkNoise.ar(0.2);
+	MiRings.ar(input, 0, 40, struct, bright, 0.7, 0.25, model:4);
+}.play
+)
+
+
+(    // spacey... . . . . . . .  .  .  .  .  .  .   .   .   .    .    .    .    .     .     .      .
+{
+	var input = PinkNoise.ar(0.2);
+	var trig = Dust.ar(0.7);
+	var struct = LFNoise1.kr(0.4).range(0,1);
+	var pos = LFNoise2.kr(0.1).range(0,1);
+	MiRings.ar(input, trig, 60, struct, 0.5, 0.7, pos, use_trig: 1, intern_exciter: 1, intern_note: 1, model:5, poly: 4)
+}.play
+)
+
+
+::

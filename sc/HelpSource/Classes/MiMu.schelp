@@ -1,0 +1,37 @@
+TITLE:: MiMu
+summary:: µ-law audio companding
+categories:: UGens>Filter
+related:: Classes/MiPlaits, Classes/MiRings
+
+DESCRIPTION::
+8bit µ-law companding for creative companding artefacts.
+Gently degrades the input signal with a slight 'cassette-like' feeling (?!).
+
+note::
+This was ported from the µ-law companding code of the 'clouds' module by mutable instruments link::https://mutable-instruments.net/::. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master/clouds/dsp:: ::
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: in
+input signal
+
+ARGUMENT:: gain
+gain, applied to the input signal. Amplitude values exceeding the -/+1. range will be soft-clipped, adding additional distortion.
+
+ARGUMENT:: bypass
+
+
+
+
+
+EXAMPLES::
+
+code::
+
+x = { MiMu.ar( SinOsc.ar(100), 2) }.play
+x.free
+
+
+::
