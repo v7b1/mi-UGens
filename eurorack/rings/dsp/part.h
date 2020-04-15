@@ -155,7 +155,7 @@ class Part {
 
   ResonatorModel model_;
 
-  int32_t num_voices_;
+  //int32_t num_voices_;
   int32_t active_voice_;
   uint32_t step_counter_;
   int32_t polyphony_;
@@ -183,6 +183,11 @@ class Part {
   Limiter limiter_;
   
   static float model_gains_[RESONATOR_MODEL_LAST];
+    
+    
+    // vb
+    float sr_;
+    float a3_;
   
   DISALLOW_COPY_AND_ASSIGN(Part);
 };

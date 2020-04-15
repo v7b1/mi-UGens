@@ -30,7 +30,7 @@ ARGUMENT:: morph
 morph parameter (0. -- 1.)
 
 ARGUMENT:: trigger
-trigger input. a non-zero value causes a internal lowpass gate to fire.
+trigger input. a non-zero value causes an internal lowpass gate to fire.
 
 ARGUMENT:: usetrigger
 use trigger flag (0 / 1)
@@ -47,7 +47,7 @@ set output gain
 
 returns::
 OUT: main signal output, AUX: carries a variant, sidekick or by-product of the main signal.
-Note: this is not necessarily conceived as a stereo output
+Note: this is not necessarily conceived as a stereo output.
 
 
 
@@ -61,10 +61,35 @@ x.free
 // Mouse control
 { MiPlaits.ar(48, 6, MouseX.kr(0, 1),  MouseY.kr(0,1), mul: 0.5) }.play
 
+{ MiPlaits.ar(48, 2, MouseX.kr(0, 1),  MouseY.kr(0,1), mul: 0.5) }.play
+
 // some talking
-{ MiPlaits.ar(MouseY.kr(24,72), 7, MouseX.kr(0, 1),  0.5, LFSaw.ar(0.11, 0, 0.5, 0.5), mul: 0.5) }.play
+{ MiPlaits.ar(MouseY.kr(24,72), 7, MouseX.kr(0, 1),  0.5, LFSaw.ar(0.11, 0, 0.5, 0.5)) }.play
+
 
 more:
+
+(   // some FM
+{
+	var harm = MouseX.kr(0, 1);
+	var timbre = MouseY.kr(0,1);
+	var morph = LFNoise2.kr(0.2).range(0,1);
+	var trigger = Impulse.ar(8);
+	MiPlaits.ar(48, 2, harm,  timbre, morph, trigger, usetrigger: 1, decay: 0.5)
+}.play
+)
+
+
+(   // particles
+{
+	var harm = MouseX.kr(0, 1);
+	var timbre = LFNoise2.kr(0.2).range(0,1);
+	var morph = MouseY.kr(0,1);
+	var out = MiPlaits.ar(60, 10, harm,  timbre, morph, mul: 1);
+	Splay.ar(out, SinOsc.kr(0.3, mul:0.2));
+}.play
+)
+
 (
 {
 	var trigger = Dust.ar( LFNoise2.ar(0.1).range(0.1, 7) );

@@ -43,9 +43,9 @@ class Strummer {
   
   void Init(float ioi, float sr) {
     onset_detector_.Init(
-        8.0f / kSampleRate,
-        160.0f / kSampleRate,
-        1600.0f / kSampleRate,
+        8.0f / Dsp::getSr(),
+        160.0f /  Dsp::getSr(),
+        1600.0f /  Dsp::getSr(),
         sr,
         ioi);
     inhibit_timer_ = static_cast<int32_t>(ioi * sr);

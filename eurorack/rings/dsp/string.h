@@ -153,6 +153,7 @@ class String {
   float aux_sample_[2];
   
   float curved_bridge_;
+    float sr_;      // vb
   
   StringDelayLine string_;
   StiffnessDelayLine stretch_;

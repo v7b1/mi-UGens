@@ -116,7 +116,7 @@ void MiPlaits_next( MiPlaits *unit, int inNumSamples)
     uint8_t    count = 0;
     
     
-    float pitch = abs(voct);
+    float pitch = fabs(voct);
     CONSTRAIN(pitch, 0.f, 127.f);
     unit->patch.note = pitch;
     

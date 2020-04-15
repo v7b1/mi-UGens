@@ -36,9 +36,30 @@
 
 namespace rings {
   
-    static const float kSampleRate = 44100.f; //48000.0f;
-const float a3 = 440.0f / kSampleRate;
-    const size_t kMaxBlockSize = 64;    //24;
+  //  static const float kSampleRate = 44100.f; //48000.0f;
+//const float a3 = 440.0f / kSampleRate;
+    const size_t kMaxBlockSize = 128; //64;    //24;
+    
+    // add some code to make SR settable
+    class Dsp {
+        private:
+        static float sr;
+        static float a3;
+        //static size_t maxBlockSize;
+        
+        public:
+        static float getSr() {return sr;}
+        static float getA3() {return a3;}
+        static void setSr(float newsr) {
+            sr = newsr;
+            a3 = 440.0f / sr;
+        }
+        /*
+        static size_t getBlockSize() {return maxBlockSize;}
+        static void setBlockSize(int newBlockSize) {
+            maxBlockSize = static_cast<size_t>(newBlockSize);
+        }*/
+    };
 
 }  // namespace rings
 

@@ -5,7 +5,7 @@ Some *mutable instruments* eurorack modules ported to [SuperCollider](https://su
 Thanks to Émilie Gillet for making the original source code available!
 https://github.com/pichenettes/eurorack
 
-**Please note, this is NOT a project by '[mutable instruments](https://mutable-instruments.net/)'!**
+**Please note, this is NOT a project by [mutable instruments](https://mutable-instruments.net/) !**
 
 
 

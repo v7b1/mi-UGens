@@ -43,6 +43,7 @@ using namespace std;
 using namespace stmlib;
 
 void String::Init(bool enable_dispersion) {
+    sr_ = Dsp::getSr();
   enable_dispersion_ = enable_dispersion;
   
   string_.Init();
@@ -50,7 +51,7 @@ void String::Init(bool enable_dispersion) {
   fir_damping_filter_.Init();
   iir_damping_filter_.Init();
   
-  set_frequency(220.0f / kSampleRate);
+  set_frequency(220.0f / sr_);
   set_dispersion(0.25f);
   set_brightness(0.5f);
   set_damping(0.3f);
@@ -66,7 +67,7 @@ void String::Init(bool enable_dispersion) {
   out_sample_[0] = out_sample_[1] = 0.0f;
   aux_sample_[0] = aux_sample_[1] = 0.0f;
   
-  dc_blocker_.Init(1.0f - 20.0f / kSampleRate);
+  dc_blocker_.Init(1.0f - 20.0f / sr_);
 }
 
 template<bool enable_dispersion>
@@ -101,7 +102,7 @@ void String::ProcessInternal(
   
   // For damping/absorption, the interpolation is done in the filter code.
   float lf_damping = damping_ * (2.0f - damping_);
-  float rt60 = 0.07f * SemitonesToRatio(lf_damping * 96.0f) * kSampleRate;
+  float rt60 = 0.07f * SemitonesToRatio(lf_damping * 96.0f) * sr_;
   float rt60_base_2_12 = max(-120.0f * delay / src_ratio / rt60, -127.0f);
   float damping_coefficient = SemitonesToRatio(rt60_base_2_12);
   float brightness = brightness_ * brightness_;

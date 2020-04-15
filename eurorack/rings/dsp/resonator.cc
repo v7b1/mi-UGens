@@ -44,12 +44,14 @@ void Resonator::Init() {
     f_[i].Init();
   }
 
-  set_frequency(220.0f / kSampleRate);
+    set_frequency(220.0f / Dsp::getSr());
   set_structure(0.25f);
   set_brightness(0.5f);
   set_damping(0.3f);
   set_position(0.999f);
   set_resolution(kMaxModes);
+    
+    previous_position_ = 0.f;       // vb, init previous_position_
 }
 
 int32_t Resonator::ComputeFilters() {

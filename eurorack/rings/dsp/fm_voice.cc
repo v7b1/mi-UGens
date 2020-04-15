@@ -41,7 +41,8 @@ namespace rings {
 using namespace stmlib;
 
 void FMVoice::Init() {
-  set_frequency(220.0f / kSampleRate);
+    sr_ = Dsp::getSr();
+  set_frequency(220.0f / sr_);
   set_ratio(0.5f);
   set_brightness(0.5f);
   set_damping(0.5f);
@@ -63,19 +64,19 @@ void FMVoice::Init() {
   fm_amount_ = 0.0f;
   
   follower_.Init(
-      8.0f / kSampleRate,
-      160.0f / kSampleRate,
-      1600.0f / kSampleRate);
+      8.0f / sr_,
+      160.0f / sr_,
+      1600.0f / sr_);
 }
 
 void FMVoice::Process(const float* in, float* out, float* aux, size_t size) {
   // Interpolate between the "oscillator" behaviour and the "FMLPGed thing"
   // behaviour.
   float envelope_amount = damping_ < 0.9f ? 1.0f : (1.0f - damping_) * 10.0f;
-  float amplitude_rt60 = 0.1f * SemitonesToRatio(damping_ * 96.0f) * kSampleRate;
+  float amplitude_rt60 = 0.1f * SemitonesToRatio(damping_ * 96.0f) * sr_;
   float amplitude_decay = 1.0f - powf(0.001f, 1.0f / amplitude_rt60);
 
-  float brightness_rt60 = 0.1f * SemitonesToRatio(damping_ * 84.0f) * kSampleRate;
+  float brightness_rt60 = 0.1f * SemitonesToRatio(damping_ * 84.0f) * sr_;
   float brightness_decay = 1.0f - powf(0.001f, 1.0f / brightness_rt60);
   
   float ratio = Interpolate(lut_fm_frequency_quantizer, ratio_, 128.0f);

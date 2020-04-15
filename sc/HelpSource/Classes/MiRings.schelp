@@ -1,13 +1,12 @@
 TITLE:: MiRings
 summary:: a resonator
 categories:: UGens>Filter
-related:: Classes/Filter, Classes/MiPlaits
+related:: Classes/Filter, Classes/Ringz, Classes/Resonz, Classes/Klank, Classes/MiPlaits
 
 DESCRIPTION::
-A resonator based on mutable instruments' Rings module.
+A resonator based on mutable instruments Rings eurorack module link::https://mutable-instruments.net/modules/rings/::.
+Original code by Émilie Gillet.
 
-note:: This is a port of the Rings eurorack module by link::https://mutable-instruments.net/::.
-Original code by Emilie Gillet ::
 
 
 CLASSMETHODS::
@@ -15,15 +14,18 @@ CLASSMETHODS::
 METHOD:: ar
 
 ARGUMENT:: in
-input signal (can also be 0, if used with internal_exciter)
+audio input, used as an excitation signal (can also be 0 - in this case the internal exciter is activated).
 
 ARGUMENT:: trig
-used to trigger internal exciter, polyphony etc.
-Trigger can be any signal.
-A trigger happens when the signal changes from non-positive to positive
+used to trigger new notes.
+Trigger can be any signal. A trigger happens when the signal changes from non-positive to positive.
+If an audio rate signal is present at the first input, you can force trig to also trigger the internal exciter by setting 'intern_exciter' to 1.
 
 ARGUMENT:: pit
 pitch (midi note)
+
+note:: For this UGen to generate sound, you either need to provide a) an audio rate exciter signal,
+b) a trigger signal (with sharp edges) or c) a non-stationary pitch control signal (with sharp edges) -- or a combination of all three :) ::
 
 ARGUMENT:: struct
 with the modal and non-linear string models, controls the inharmonicity of the spectrum
@@ -37,117 +39,213 @@ ARGUMENT:: damp
 controls the damping rate of the sound, from 100ms to 10s (0. -- 1.)
 
 ARGUMENT:: pos
-specifies at which point the structure is excited (0. -- 1.)
+specifies the position where the structure is excited (0. -- 1.)
 
 ARGUMENT:: model
-resonator model (0 -- 5):
-0: modal_resonator,
-1: sympathetic_string,
-2: modulated/inharmonic_string,
-3: fm_voice,
-4: sympathetic_string_quantized,
-5: string_and_reverb
+set resonator model (0 -- 5):
+0: MODAL_RESONATOR,
+1: SYMPATHETIC_STRING,
+2: MODULATED/INHARMONIC_STRING,
+3: 2-OP_FM_VOICE,
+4: SYMPATHETIC_STRING_QUANTIZED,
+5: STRING_AND_REVERB
 
 ARGUMENT:: poly
-polyphony, number of simultaneous voices (1 -- 4) - this also influences the number of partials generated per voice.
-more voices means less partials.
-
-ARGUMENT:: use_trig
-boolean
+Polyphony, number of simultaneous voices (1 -- 4) - this also influences the number of partials generated per voice.
+More voices mean less partials.
 
 ARGUMENT:: intern_exciter
-boolean
+If an audio rate excitation signal is present at the first input, the internal exciter is turned off automatically. If you want to force triggering the internal exciter by the trigger input, then set this to 1.
 
-ARGUMENT:: intern_note
-boolean
+ARGUMENT:: easteregg
+switch to 'easter egg' mode and activate 'disastrous peace' model. Inspired by Roland RS-09 and disasterpeace...
+In this mode, the 'model' argument selects an FX from the following list:
+0: FX_FORMANT,
+1: FX_CHORUS,
+2: FX_REVERB,
+3: FX_FORMANT,
+4: FX_ENSEMBLE,
+5: FX_REVERB --
+The position argument controls FX depth.
+
 
 ARGUMENt:: bypass
-
+Bypass the resonator and send the excitation input signal directly to the outputs.
 
 ARGUMENT:: mul
 set output gain
 
 
 returns::
-[outL, outR]
+[EVEN, ODD] - In monophonic mode, these two outputs carry two complementary components of the signal (odd and even numbered partials with the modal resonator, dephased components due to picking position and pickup placement with the string resonators). In polyphonic mode, splits the signal into odd and even numbered strings/plates.
 
 
 
 EXAMPLES::
 
 code::
+
 // basics
-x = {MiRings.ar(Impulse.ar(1))}.play
-y = {MiRings.ar(PinkNoise.ar(0.2),0, 40)}.play
+x = { MiRings.ar(Impulse.ar(1)) }.play
+y = { MiRings.ar(PinkNoise.ar(0.1), pit: 40) }.play
 x.free
 y.free
 
+// using the 'trig' input to excite the resonator
+{MiRings.ar(trig: Dust.kr(0.7), pit: 33, model: 1)}.play
 
-(   // sympathetic strings using internal exciter
-{
-    var trig = Dust.ar(0.3);
-    var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
-	var struct = LFNoise1.kr(0.4).range(0,1);
-
-    MiRings.ar(0, trig, pit, struct, 0.5, 0.8, 0.25, use_trig: 1, intern_exciter: 1, model:1, poly: 1)
-}.play
-)
-
-(   // inharmonic string using internal exciter
-{
-    var trig = Dust.ar(1);
-    var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
-	var struct = Latch.ar(WhiteNoise.ar(), trig).range(0,1);
-
-    MiRings.ar(0, trig, pit, struct, 0.5, 0.8, 0.25, use_trig: 1, intern_exciter: 1, model:2, poly: 2)
-}.play
-)
+// using the 'pit' input to set MIDI pitch and excite the resonator
+{MiRings.ar(pit: LFNoise0.kr(2).range(30, 50), model: 2)}.play
 
 
 more:
-(
-{
-	var trig = Dust.ar(1);
-	var pit = Latch.ar(WhiteNoise.ar(), trig).range(30, 60).round;
-	var struct = LFNoise1.kr(0.4).range(0,1);
 
-	MiRings.ar(0, trig, pit, struct, 0.5, 0.7, 0.25, use_trigger: 1, intern_exciter: 1, model:5, polyphony: 4)
+(  // sympathetic strings (have to love it...)
+{
+	var trig = Dust.kr(1);
+	var pit = Latch.kr(WhiteNoise.kr(), trig).range(30, 60).round;
+	var struct = LFNoise2.kr(0.4).range(0,1);
+
+	MiRings.ar(0, 0, pit, struct, 0.5, 0.7, 0.25, model: 1, poly: 4)
 }.play
 )
 
 
-// easter egg models ::::::::::
-
-(    // FM synth
+(   // inharmonic string
 {
-	var input = Impulse.kr(6);
-	var pitch = Latch.kr(WhiteNoise.kr(), input).range(24, 48).round;
-	var position = LFNoise1.kr(0.4).range(0,0.5);
-	var brightness = LFNoise1.kr(0.5).range(0.2,0.9);
-	MiRings.ar(input, pit: pitch, bright: brightness, pos: position, damp: 0.97, poly: 2, model: 3)
+	var trig = Dust.kr(3);
+    var trigPit = Dust.kr(0.5);
+    var pit = Latch.kr(WhiteNoise.kr(), trigPit).range(30, 60);
+	var struct = Latch.kr(PinkNoise.kr(), trig).range(0.1,1);
+
+    MiRings.ar(0, trig, pit, struct, 0.5, 0.8, model: 2, poly: 4)
 }.play
 )
 
 
-(   // chords
+(   // simple vibrato
 {
-	var struct = LFNoise0.kr(0.2).range(0,1);
-	var bright = LFNoise2.kr(0.2).range(0.15, 1);
-	var input = PinkNoise.ar(0.2);
-	MiRings.ar(input, 0, 40, struct, bright, 0.7, 0.25, model:4);
+    var trig = Dust.kr(0.5);
+	var pit = Latch.kr(WhiteNoise.kr(), trig).range(36, 48);
+	var vib = SinOsc.kr(3);
+
+    MiRings.ar(0,0, pit+vib, 0.2, model: 0)
 }.play
 )
 
 
-(    // spacey... . . . . . . .  .  .  .  .  .  .   .   .   .    .    .    .    .     .     .      .
+(  // some more vibrato
 {
-	var input = PinkNoise.ar(0.2);
+	var note = 48;
+	var input = Saw.ar(note.midicps, 0.1);
+	var trig = Dust.kr(0.3);
+	var pit = Latch.kr(PinkNoise.kr(3), trig);
+	var vib = SinOsc.kr(5, 0, LFNoise2.kr(0.2).clip(0,1));
+
+	MiRings.ar(input, trig, note+pit+vib, 0.2, 0.6, 0.9, intern_exciter: 1)
+}.play
+)
+::
+
+Section:: Internal Exciter
+
+If an audio rate excitation signal is provided (at the first input), the internal exciter is off by default.
+With 'intern_exciter' set to 1, you can still force it to be on.
+
+Compare these two cases:
+
+code::
+
+// this one has 'intern_exciter' OFF (automatically)
+{MiRings.ar(PinkNoise.ar(0.1), Impulse.kr(1), poly: 2)}.play
+
+// this one forces it to ON
+{MiRings.ar(PinkNoise.ar(0.1), Impulse.kr(1), intern_exciter: 1, poly: 2)}.play
+
+
+more:
+
+(    // force intern_exciter ON
+{
+	var input = Crackle.ar(1.999, 0.2);
 	var trig = Dust.ar(0.7);
-	var struct = LFNoise1.kr(0.4).range(0,1);
+	var bright = LFNoise1.kr(0.4).range(0.1,0.8);
 	var pos = LFNoise2.kr(0.1).range(0,1);
-	MiRings.ar(input, trig, 60, struct, 0.5, 0.7, pos, use_trig: 1, intern_exciter: 1, intern_note: 1, model:5, poly: 4)
+
+	MiRings.ar(input, trig, 56, 0.1, bright, 0.6, pos, intern_exciter: 1, model:0, poly: 3)
 }.play
 )
 
 
 ::
+
+SECTION:: More Examples
+
+Some more examples using the 'alternate' models.
+code::
+
+(    // 2-op_FM - 'pos' controls feedback (no fb at 0.5)
+{
+	var input = Impulse.kr(6);
+	var pitch = Latch.kr(WhiteNoise.kr(), input).range(24, 48).round;
+	var brightness = LFNoise1.kr(0.5).range(0.2,0.9);
+	var position = LFNoise1.kr(0.4).range(0,0.5);
+
+	var out = MiRings.ar(input, pit: pitch, bright: brightness, pos: position, damp: 0.97, model: 3);
+
+	Splay.ar(out, LFNoise2.kr(0.5).range(-0.5,0.5));
+}.play
+)
+
+
+(   // sympathetic_string_quantized --> chords
+{
+	var input = PinkNoise.ar(0.2);
+	var bright = LFNoise2.kr(0.5).range(0.15, 1);
+	var struct = LFNoise0.kr(0.2).range(0,1);
+
+	MiRings.ar(input, 0, 40, struct, bright, 0.7, 0.25, model:4, poly: 1);
+}.play
+)
+
+(    // string_and_reverb --> spacey... . . . . . . .  .  .  .  .  .  .   .   .   .    .    .    .    .     .     .      .
+{
+	var input = PinkNoise.ar(0.2);
+	var trig = Dust.kr(0.7);
+	var struct = LFNoise1.kr(0.4).range(0,1);
+	var pos = LFNoise2.kr(0.1).range(0,1);
+	// note: force 'internal exciter'
+	MiRings.ar(input, trig, 60, struct, 0.5, 0.7, pos, intern_exciter: 1, model:5, poly: 4)
+}.play
+)
+::
+
+
+SECTION:: Easter Egg
+
+In the original module this is a hidden mode, that can be activated by a 'secret handshake' - all pots have to be set to specific positions forming a special pattern. For the UGen version you can simply set 'easteregg' to 1.
+code::
+
+(    // easter egg
+{
+	var trig = Impulse.kr(0.3);
+	var pitch = Latch.kr(WhiteNoise.kr(), trig).range(24, 48).round;
+	var brightness = LFNoise1.kr(0.5).range(0.2,0.9);
+	var position = LFNoise1.kr(0.4).range(0,1);
+
+	MiRings.ar(pit: pitch, bright: brightness, pos: position, damp: 0.94, poly: 1, model: 0, easteregg: 1)
+}.play
+)
+
+(    // easter egg --> drone
+     // set damp to 1.0 to get a sustaining sound that doesn't need to be triggered
+{
+	var struct = LFNoise2.kr(0.2).range(0,1);
+	var brightness = LFNoise1.kr(0.5).range(0,1);
+
+	MiRings.ar(pit: 40, struct: struct, bright: brightness, pos: 0.9, damp: 1.0, poly: 2, model: 2, easteregg: 1)
+}.play
+)
+::
+
+

@@ -117,6 +117,8 @@ class FMVoice {
   float previous_sample_;
   
   Follower follower_;
+    
+    float sr_;      // vb
   
   DISALLOW_COPY_AND_ASSIGN(FMVoice);
 };

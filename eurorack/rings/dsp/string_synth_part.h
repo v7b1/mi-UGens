@@ -118,7 +118,7 @@ class StringSynthPart {
   Chorus chorus_;
   Limiter limiter_;
 
-  int32_t num_voices_;
+  //int32_t num_voices_;
   int32_t active_group_;
   uint32_t step_counter_;
   int32_t polyphony_;
@@ -132,6 +132,8 @@ class StringSynthPart {
   float filter_out_buffer_[kMaxBlockSize];
   
   bool clear_fx_;
+    float sr_;      // vb
+    float a3_;      // vb
   
   DISALLOW_COPY_AND_ASSIGN(StringSynthPart);
 };
