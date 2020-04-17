@@ -1,9 +1,31 @@
+/*
+ mi-UGens - SuperCollider UGen Library
+ Copyright (c) 2020 Volker Böhm. All rights reserved.
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see http://www.gnu.org/licenses/ .
+ */
 
-/************
- *
- *  volker böhm, april 2020
- *
- *///////////
+/*
+ 
+ MiRings - a clone of the eurorack module 'Rings' by
+ https://mutable-instruments.net/
+ 
+ Original code by Émilie Gillet
+ 
+ https://vboehm.net
+ 
+ */
 
 
 #include "SC_PlugIn.h"
@@ -47,9 +69,9 @@ static void MiRings_next(MiRings *unit, int inNumSamples);
 
 static void MiRings_Ctor(MiRings *unit) {
     
-    //Print("MiRings SR: %f\n", SAMPLERATE);
     rings::Dsp::setSr(SAMPLERATE);
 
+    // TODO: fix changing block sizes - code works for 64 samples
     //Print("sc block size: %d\n", BUFLENGTH);
     if(BUFLENGTH > kMaxBlockSize) {
         Print("MiRings ERROR: sc block size too big!\n");
@@ -60,7 +82,7 @@ static void MiRings_Ctor(MiRings *unit) {
         return;
     }*/
     
-    kBlockSize = BUFLENGTH;     // TODO: check out different sc blocksizes
+    kBlockSize = BUFLENGTH;
         
     
     // allocate memory + init with zeros
@@ -114,8 +136,6 @@ static void MiRings_Ctor(MiRings *unit) {
 
 static void MiRings_Dtor(MiRings *unit) {
     
-    SCWorld_Allocator alloc(ft, unit->mWorld);
-
     if(unit->reverb_buffer) {
         RTFree(unit->mWorld, unit->reverb_buffer);
     }

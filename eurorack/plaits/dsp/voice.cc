@@ -76,10 +76,14 @@ void Voice::Init(BufferAllocator* allocator) {
   trigger_delay_.Init(trigger_delay_line_);
 }
 
+    // changed out and aux buffers, vb
+    
 void Voice::Render(
     const Patch& patch,
     const Modulations& modulations,
-    Frame* frames,
+    //Frame* frames,
+                   float* out,
+                   float* aux,
     size_t size) {
   // Trigger, LPG, internal envelope.
     
@@ -88,6 +92,7 @@ void Voice::Render(
     
   // Delay trigger by 1ms to deal with sequencers or MIDI interfaces whose
   // CV out lags behind the GATE out.
+    // TODO: do we need this?
   trigger_delay_.Write(modulations.trigger);
   float trigger_value = trigger_delay_.Read(kTriggerDelay);
   
@@ -201,7 +206,7 @@ void Voice::Render(
       1.0f);
 
   bool already_enveloped = pp_s.already_enveloped;
-  e->Render(p, out_buffer_, aux_buffer_, size, &already_enveloped);
+  e->Render(p, out, aux, size, &already_enveloped);
   
   bool lpg_bypass = already_enveloped || \
       (!modulations.level_patched && !modulations.trigger_patched);
@@ -220,16 +225,16 @@ void Voice::Render(
     }
   }
   
+    // vb changed this to skip conversion to '16bit int'
+    // and stay with floats instead.
   out_post_processor_.Process(
       pp_s.out_gain,
       lpg_bypass,
       lpg_envelope_.gain(),
       lpg_envelope_.frequency(),
       lpg_envelope_.hf_bleed(),
-      out_buffer_,
-      &frames->out,
-      size,
-      2);
+      out,
+      size);
 
   aux_post_processor_.Process(
       pp_s.aux_gain,
@@ -237,15 +242,33 @@ void Voice::Render(
       lpg_envelope_.gain(),
       lpg_envelope_.frequency(),
       lpg_envelope_.hf_bleed(),
-      aux_buffer_,
-      &frames->aux,
-      size,
-      2);
-     /*
-    for(int i=0; i<size; ++i) {
-        frames[i].out = 0;
-        frames[i].aux = 0;
-    }*/
-}
+      aux,
+      size);
+    
+    // TODO: change this to skip conversion to '16bit int'
+    // and stay with floats instead.
+    /*
+    out_post_processor_.Process(
+                                pp_s.out_gain,
+                                lpg_bypass,
+                                lpg_envelope_.gain(),
+                                lpg_envelope_.frequency(),
+                                lpg_envelope_.hf_bleed(),
+                                out_buffer_,
+                                &frames->out,
+                                size,
+                                2);
+    
+    aux_post_processor_.Process(
+                                pp_s.aux_gain,
+                                lpg_bypass,
+                                lpg_envelope_.gain(),
+                                lpg_envelope_.frequency(),
+                                lpg_envelope_.hf_bleed(),
+                                aux_buffer_,
+                                &frames->aux,
+                                size,
+                                2);*/
+     }
   
 }  // namespace plaits

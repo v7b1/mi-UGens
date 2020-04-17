@@ -1,4 +1,4 @@
-// vboehm.net, 2020
+// volker böhm, 2020 - https://vboehm.net
 
 MiMu : UGen {
 

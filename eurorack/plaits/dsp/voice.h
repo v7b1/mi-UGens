@@ -107,6 +107,34 @@ class ChannelPostProcessor {
       }
     }
   }
+    
+    // new process, vb
+    void Process(
+                 float gain,
+                 bool  bypass_lpg,
+                 float low_pass_gate_gain,
+                 float low_pass_gate_frequency,
+                 float low_pass_gate_hf_bleed,
+                 float* in_out,
+                 size_t size) {
+        if (gain < 0.0f) {
+            limiter_.Process(-gain, in_out, size);
+        }
+        const float post_gain = (gain < 0.0f ? 1.0f : gain);
+        if (!bypass_lpg) {
+            lpg_.Process(
+                         post_gain * low_pass_gate_gain,
+                         low_pass_gate_frequency,
+                         low_pass_gate_hf_bleed,
+                         in_out,
+                         size);
+        } else {
+            while (size--) {
+                *in_out++ *= post_gain;
+            }
+        }
+    }
+    //
   
  private:
   stmlib::Limiter limiter_;
@@ -157,10 +185,14 @@ class Voice {
   };
   
   void Init(stmlib::BufferAllocator* allocator);
+    
+    // pass output buffers directly into render function, vb
   void Render(
       const Patch& patch,
       const Modulations& modulations,
-      Frame* frames,
+      //Frame* frames,
+              float* out,   // vb
+              float* aux,   // vb
       size_t size);
   inline int active_engine() const { return previous_engine_index_; }
     
@@ -225,8 +257,9 @@ class Voice {
   
   EngineRegistry<kMaxEngines> engines_;
   
-  float out_buffer_[kMaxBlockSize];
-  float aux_buffer_[kMaxBlockSize];
+    // vb, // we don't use these anymore
+  //float out_buffer_[kMaxBlockSize];
+  //float aux_buffer_[kMaxBlockSize];
   
   DISALLOW_COPY_AND_ASSIGN(Voice);
 };

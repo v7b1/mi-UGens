@@ -6,7 +6,7 @@ related:: Classes/Osc, Classes/MiRings, Classes/MiMu
 DESCRIPTION::
 A macro oscillator offering a multitude of synthesis methods.
 
-note:: This is a port of the Plaits eurorack module by link::https://mutable-instruments.net/::. Original code by Émilie Gillet::
+note:: This is a port of the Plaits eurorack module by link::https://mutable-instruments.net/modules/plaits::. Original code by Émilie Gillet::
 
 
 CLASSMETHODS::
@@ -14,7 +14,7 @@ CLASSMETHODS::
 METHOD:: ar
 
 ARGUMENT:: pitch
-playback pitch (midi note)
+pitch (midi note)
 
 ARGUMENT:: engine
 chooses synthesis engine (0 -- 15):
@@ -30,10 +30,24 @@ ARGUMENT:: morph
 morph parameter (0. -- 1.)
 
 ARGUMENT:: trigger
-trigger input. a non-zero value causes an internal lowpass gate to fire.
+A non-zero value causes a trigger to
+a) fire the internal decaying envelope generator
+b) excites the physical and percussive models
+c) strikes the internal low-pass gate (LPG) (unless the 'level' input is modulated (patched))
+d) samples and holds the value of the 'model' input
 
-ARGUMENT:: usetrigger
-use trigger flag (0 / 1)
+
+ARGUMENT:: level
+Opens the internal low-pass gate, to simultaneously control the amplitude and brightness of the output signal. Also acts as an accent control when triggering the physical or percussive models.
+
+ARGUMENT:: fm_mod
+fm modulation amount, if internal env is activated by trigger
+
+ARGUMENT:: timb_mod
+timbre modulation amount, if internal env is activated by trigger
+
+ARGUMENT:: morph_mod
+morph modulation amount, if internal env is activated by trigger
 
 ARGUMENT:: decay
 decay rate of internal lowpass gate (0. -- 1.)
@@ -55,16 +69,28 @@ EXAMPLES::
 
 code::
 // basics
-x = { MiPlaits.ar(48, 0, mul: 0.2) }.play
+x = { MiPlaits.ar(35, 0, harm: 0.252, morph: 0.2, mul: 0.2) }.play
 x.free
 
 // Mouse control
-{ MiPlaits.ar(48, 6, MouseX.kr(0, 1),  MouseY.kr(0,1), mul: 0.5) }.play
-
 { MiPlaits.ar(48, 2, MouseX.kr(0, 1),  MouseY.kr(0,1), mul: 0.5) }.play
 
 // some talking
 { MiPlaits.ar(MouseY.kr(24,72), 7, MouseX.kr(0, 1),  0.5, LFSaw.ar(0.11, 0, 0.5, 0.5)) }.play
+
+
+// scanning through some engines + vibrato
+// note: there's no interpolation happening when changing the synthesis engine,
+// so eventual clicks are unavoidable
+(
+{
+	var pit = 50;
+	var vib = SinOsc.ar(6, 0, 0.3);
+	var e = LFNoise0.kr(0.5, 4, 4);
+	MiPlaits.ar(pit+vib, e, mul: 0.2);
+}.play
+)
+
 
 
 more:
@@ -75,22 +101,105 @@ more:
 	var timbre = MouseY.kr(0,1);
 	var morph = LFNoise2.kr(0.2).range(0,1);
 	var trigger = Impulse.ar(8);
-	MiPlaits.ar(48, 2, harm,  timbre, morph, trigger, usetrigger: 1, decay: 0.5)
+	MiPlaits.ar(48, 2, harm,  timbre, morph, trigger, decay: 0.5)
 }.play
 )
 
 
-(   // particles
+(   // wavetable + trigger
 {
-	var harm = MouseX.kr(0, 1);
-	var timbre = LFNoise2.kr(0.2).range(0,1);
-	var morph = MouseY.kr(0,1);
-	var out = MiPlaits.ar(60, 10, harm,  timbre, morph, mul: 1);
-	Splay.ar(out, SinOsc.kr(0.3, mul:0.2));
+	var trigger = Impulse.kr(8);
+    var harm = LFNoise2.kr(0.3,0.25,0.25);
+	var timbre = LFNoise1.kr(0.4,0.5,0.5);
+	var dec = LFNoise2.kr(0.2).range(0.2,0.8);
+    MiPlaits.ar(44, 5, harm, timbre, 0, trigger, decay: dec, mul: 0.5)
 }.play
 )
 
-(
+
+(   // some chords + trigger + level
+{
+	var harm = MouseY.kr(0,1);  // select chord
+    var timbre = 0.5;
+    var morph = 0.5;
+    var trigger = Impulse.kr(6);
+	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger);
+    var out = MiPlaits.ar(40, 6, harm, timbre, morph, trigger, lev.squared, decay: 0.5, timb_mod: 0.4, mul: 0.5);
+	out[0]!2
+}.play
+)
+
+
+(   // super saw
+{
+    var harm = 0.16;
+    var timbre = 0;
+	var morph = 1;
+	var pit = 44 + Latch.kr(WhiteNoise.kr(5), Dust.kr(0.5)).round;
+	var out = MiPlaits.ar(pit, 8, harm, timbre, morph, mul: 0.3);
+	out[0]!2
+}.play
+)
+
+
+(   // slow swarm
+{
+    var harm = 0.9;
+    var timbre = 0;
+	var morph = 0.5;
+    var out = MiPlaits.ar(48, 8, harm, timbre, morph);
+	Mix.ar([out[0]*0.03, out[1]])!2
+}.play
+)
+
+
+(   // inharmonic string
+{
+    var harm = LFNoise2.kr(0.2).range(0,1);
+    var timbre = 0.0;
+    var morph = 0.85; //LFNoise2.kr(0.2).range(0,1);
+    var out = MiPlaits.ar(60, 11, harm, timbre, morph);
+	out[0]!2
+}.play
+)
+
+
+(   // modal resonator + trigger
+{
+    var harm = LFNoise2.kr(0.2).range(0,1);
+    var timbre = 0.0;
+    var morph = 0.85;
+	var trigger = Impulse.kr(1);
+	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger).squared;
+    var out = MiPlaits.ar(56, 12, harm, timbre, morph, trigger, lev);
+	Mix.new(out)!2
+}.play
+)
+
+
+(   // snare drumsss
+{
+	var harm = LFNoise2.kr(0.5).range(0,0.5);
+    var timbre = 0.173;
+    var morph = 0.827;
+    var trigger = Impulse.kr(8);
+	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger).squared;
+    MiPlaits.ar(47, 14, harm, timbre, morph, trigger, lev, fm_mod: 0.2, timb_mod: 0.43, decay: 0.4)
+}.play
+)
+
+
+(   // filtered noise
+{
+    var harm = 0.575;
+    var timbre = 0.02;
+	var morph = LFNoise1.kr(0.3).range(0.55,0.9); // filter resonance
+    MiPlaits.ar(62, 9, harm, timbre, morph);
+}.play
+)
+
+
+(  // something...
 {
 	var trigger = Dust.ar( LFNoise2.ar(0.1).range(0.1, 7) );
 	var harmonics = SinOsc.ar(0.03, 0, 0.5, 0.5).range(0.0, 1.0);
@@ -101,7 +210,7 @@ more:
 	var engine = Latch.ar(WhiteNoise.ar(8,8), trigger).round;
 	var sub = SinOsc.ar(pitch.midicps, 0, 0.2);
 	var mi = MiPlaits.ar( pitch, engine, harmonics, timbre, morph,
-		trigger: trigger, usetrigger: 1, decay: 0.8, lpg_colour: 0.2);
+		trigger: trigger, decay: 0.8, lpg_colour: 0.2);
 	mi + sub
 }.play
 )
