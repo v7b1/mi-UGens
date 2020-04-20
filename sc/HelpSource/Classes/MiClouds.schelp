@@ -1,0 +1,95 @@
+TITLE:: MiClouds
+summary:: granular audio processor and texture synthesizer
+categories:: UGens>Buffer, UGens>Generators>Granular
+related:: Classes/TGrains, Classes/MiPlaits, Classes/MiRings
+
+DESCRIPTION::
+MiClouds is a granular audio processor. It creates textures and soundscapes by combining multiple overlapping, delayed, transposed and enveloped segments of sound taken from an audio recording buffer.
+
+note::
+MiClouds is based on mutable instruments' Clouds eurorack module - link::https://mutable-instruments.net/modules/clouds::. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master:: ::
+
+Please refer to the original clouds manual for indepth information: link::https://mutable-instruments.net/modules/clouds/manual/::
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: inputArray
+Two-channel audio input. A mono input signal will be internally copied to the second channel.
+
+ARGUMENT:: pit
+Playback pitch (+-48.0)
+
+ARGUMENT:: pos
+Playback position in the internal buffer (0. -- 1.)
+
+ARGUMENT:: size
+Grain size (0. -- 1.)
+
+ARGUMENT:: dens
+Grain density (0. -- 1.)
+
+ARGUMENT:: tex
+(0. -- 1.)
+
+ARGUMENT:: drywet
+Dry wet crossfader (0. -- 1.)
+
+ARGUMENT:: in_gain
+Input gain (0.125 -- 8.)
+
+ARGUMENT:: spread
+Spread of the stereo signal (0. -- 1.)
+
+ARGUMENT:: rvb
+Reverb amount (0. -- 1.)
+
+ARGUMENT:: fb
+Feedback amount (0. -- 1.)
+
+ARGUMENT:: freeze
+Freeze on/off. By default it's off, and audio is recorded into the internal buffer.
+If 'freeze' is on, the buffer is frozen and playback is fixed to what was recorded before.
+
+ARGUMENT:: mode
+Choose between 4 playback modes (0 -- 3):
+0:PLAYBACK_MODE_GRANULAR,
+1:PLAYBACK_MODE_STRETCH,
+2:PLAYBACK_MODE_LOOPING_DELAY,
+3:PLAYBACK_MODE_SPECTRAL.
+
+ARGUMENT:: lofi
+Switch to lofi mode (buffer size 4 seconds). Will always erase what is inside the buffer.
+
+ARGUMENT:: trig
+Trigger input for single grains.
+
+returns:: left and right audio channel
+
+
+EXAMPLES::
+
+code::
+
+(  // basic usage
+{
+	var imp = Dust.ar([0.8,1.1]);
+	var freq = Latch.ar(PinkNoise.ar(24,80), imp).midicps;
+	var input = RLPF.ar(imp, freq, 0.002, 4);
+
+	var pit = LFNoise1.kr(0.3,12);
+	var pos = LFNoise2.kr(0.4,0.5,0.5);
+	var size = LFNoise1.kr(0.3,0.5,0.5);
+	var dens = LFNoise1.kr(0.3,0.5,0.5);
+	var tex = LFNoise1.kr(0.3,0.5,0.5);
+
+	var frez = LFClipNoise.kr(0.3);
+
+	MiClouds.ar(input, pit, pos, size, dens, tex, drywet: 0.5, in_gain: 2, rvb:0.3, fb: 0.8,
+		freeze: frez, lofi: 1, mode: 0);
+
+}.play
+)
+
+::

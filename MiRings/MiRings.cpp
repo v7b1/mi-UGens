@@ -127,6 +127,8 @@ static void MiRings_Ctor(MiRings *unit) {
     else
         unit->performance_state.internal_note = false;
 
+    // TODO: check out ClearUnitOutputs
+//    ClearUnitOutputs(unit, 1);
     
     SETCALC(MiRings_next);
     //MiRings_next(unit, 64);       // do we reallly need this?

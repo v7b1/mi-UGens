@@ -1,0 +1,71 @@
+TITLE:: MiVerb
+summary:: stereo reverb
+categories:: UGens>Reverbs
+related:: Classes/FreeVerb, Classes/MiPlaits, Classes/MiRings
+
+DESCRIPTION::
+True stereo reverb, based on the Griesinger reverb topology
+
+note::
+This was ported from the mutable instruments eurorack modules - link::https://mutable-instruments.net/::. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master:: ::
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: inputArray
+Input UGens (channelArray). MultiChannel inputs will be placed left and right in the dry stereo image.
+
+
+ARGUMENT:: time
+Reverb time (0 -- 1.25). At values of 1. or greater the reverb tail doesn't decay anymore, but keeps growing which drives the output into soft distortion. Can be nice, but watch out for DCs building up. (TODO: add dc blocker)
+
+ARGUMENT:: amount
+Reverb amount (0 -- 1.)
+
+ARGUMENT:: diff
+Reverb diffusion (0 -- 1.)
+
+ARGUMENT:: damp
+High frequency damping (0 -- 1.)
+
+ARGUMENT:: freeze
+Freezes the reverb tail and closes the input. A non-zero value activates 'freeze'.
+
+
+EXAMPLES::
+
+code::
+
+  // basic
+
+{ MiVerb.ar(Impulse.ar(1)) }.play
+
+
+(  // stereo example, with freezing
+{
+	var imp = Dust.ar([1,1.3]);
+	var freq = Latch.ar(PinkNoise.ar(24,80), imp).midicps;
+	var input = RLPF.ar(imp, freq, 0.002, 3);
+	var freez = Latch.kr(LFNoise0.kr(1), Dust.kr(0.5));
+
+	var revtime = 0.8;
+	var amount = 0.5;
+	var diffusion = 0.7;
+	var damping = 0.3;
+
+	MiVerb.ar(input, revtime, amount, diffusion, damping, freez);
+}.play
+)
+
+
+(  // playing with the fire...
+{
+	var input = Impulse.ar(0.5);
+	var time = LFNoise2.kr(0.3, 0.1, 1.03); // modulate rev time above and below 1.0!
+	MiVerb.ar(input, time, 0.7, 0.7, 0.3, mul: 0.5);
+}.play
+)
+
+
+::

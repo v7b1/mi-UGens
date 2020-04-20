@@ -35,19 +35,16 @@
 
 static InterfaceTable *ft;
 
+const uint16 kNumArgs = 5;
+
 
 struct MiVerb : public Unit {
     
     float      sr;
-    bool        bypass;
+    //bool        bypass;
     
-    rings::Reverb      *reverb_;
-    uint16_t    *reverb_buffer;
-    float      reverb_amount;
-    float      reverb_time;
-    float      reverb_diffusion;
-    float      reverb_lp;
-    float      space;
+    rings::Reverb   *reverb_;
+    uint16_t   *reverb_buffer;
     float      input_gain;
     
 };
@@ -58,42 +55,42 @@ static void MiVerb_Dtor(MiVerb *unit);
 static void MiVerb_next(MiVerb *unit, int inNumSamples);
 
 
-
 static void MiVerb_Ctor(MiVerb *unit) {
     
     // alloc mem
-    unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t)); // 65536
+    unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t));
     memset(unit->reverb_buffer, 0, 32768*sizeof(uint16_t));
     
     if(unit->reverb_buffer == NULL) {
         Print( "mem alloc failed!" );
         unit = NULL;
+        ClearUnitOutputs(unit, BUFLENGTH); // ??
         return;
     }
     
-    unit->bypass = false;
+    //unit->bypass = false;
     
     unit->reverb_ = new rings::Reverb;
     unit->reverb_->Init(unit->reverb_buffer);
     
-    unit->reverb_amount = 0.5;
-    unit->reverb_time = 0.5;
-    unit->reverb_diffusion = 0.625;
-    unit->reverb_lp = 0.7;
-    unit->input_gain = 0.5;
+    unit->input_gain = 0.5f;
     
-    unit->reverb_->set_time(unit->reverb_time);
+    unit->reverb_->set_time(0.7f);
     unit->reverb_->set_input_gain(unit->input_gain);
-    unit->reverb_->set_lp(unit->reverb_lp);
-    unit->reverb_->set_amount(unit->reverb_amount);
-    unit->reverb_->set_diffusion(unit->reverb_diffusion);
+    unit->reverb_->set_lp(0.3f);
+    unit->reverb_->set_amount(0.5f);
+    unit->reverb_->set_diffusion(0.7f);
 
     //unit->reverb_->set_hp(0.995);
     
-    SETCALC(MiVerb_next);        // tells sc synth the name of the calculation function
-    MiVerb_next(unit, 1);
+    uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
+    Print("MiVerb > numAudioIns: %d\n", numAudioInputs);
+    
+    SETCALC(MiVerb_next);
+    ClearUnitOutputs(unit, 1);
+    //MiVerb_next(unit, 1);
+    
 }
-
 
 
 static void MiVerb_Dtor(MiVerb *unit) {
@@ -105,47 +102,18 @@ static void MiVerb_Dtor(MiVerb *unit) {
 }
 
 
-#pragma mark ---- untility functions ----
 
-void myObj_space(MiVerb *unit, float input) {
-    CONSTRAIN(input, 0., 1.); // * 2.0;
-    unit->space = input;
+
+void unit_freeze(MiVerb *unit) {
+   
+    unit->reverb_->set_time(1.0);
+    unit->reverb_->set_input_gain(0.0);
+    unit->reverb_->set_lp(1.0);
     
-    // Compute reverb parameters from the "space" metaparameter.
-    
-    //double space = unit->space >= 1.0 ? 1.0 : unit->space;
-    //space = space >= 0.1 ? space - 0.1 : 0.0;
-    //unit->reverb_amount = space >= 0.5 ? 1.0 * (space - 0.5) : 0.0;
-    unit->reverb_amount = unit->space*0.7;
-    unit->reverb_time = 0.3 + unit->reverb_amount;
-    
-    bool freeze = unit->space >= 0.98;   //1.75;
-    if (freeze) {
-        unit->reverb_->set_time(1.0);
-        unit->reverb_->set_input_gain(0.0);
-        unit->reverb_->set_lp(1.0);
-    } else {
-        unit->reverb_->set_time(unit->reverb_time);
-        unit->reverb_->set_input_gain(0.2);
-        unit->reverb_->set_lp(unit->reverb_lp);
-    }
-    
-    unit->reverb_->set_amount(unit->reverb_amount);
 }
 
 
-void myObj_freeze(MiVerb *unit, long input) {
-    if(input != 0) {
-        unit->reverb_->set_time(1.0);
-        unit->reverb_->set_input_gain(0.0);
-        unit->reverb_->set_lp(1.0);
-    } else {
-        unit->reverb_->set_time(unit->reverb_time);
-        unit->reverb_->set_input_gain(0.2);
-        unit->reverb_->set_lp(unit->reverb_lp);
-    }
-}
-
+#pragma mark ----- soft clipping -----
 
 inline void SoftClip_block(float *inout, size_t size) {
     while(size--) {
@@ -167,7 +135,6 @@ inline void SoftLimit_block(float *inout, size_t size) {
     }
 }
 
-#pragma mark ----- soft clipping -----
 
 inline float SoftLimit(float x) {
     return x * (27.0f + x * x) / (27.0f + 9.0f * x * x);
@@ -188,33 +155,38 @@ inline float SoftClip(float x) {
 
 void MiVerb_next( MiVerb *unit, int inNumSamples )
 {
-    float   *inL = IN(0);
-    float   time = IN0(1);
-    float   amount = IN0(2);
-    float   diffusion = IN0(3);
-    float   lp = IN0(4);
+    float   time = IN0(0);
+    float   amount = IN0(1);
+    float   diffusion = IN0(2);
+    float   lp = IN0(3);
+    bool    freeze = IN0(4) > 0.f;
     
     float   *outL = OUT(0);
     float   *outR = OUT(1);
     
-
-    size_t size = inNumSamples;;
-    
+    size_t size = inNumSamples;
     rings::Reverb *reverb = unit->reverb_;
     
-    
-    std::copy(&inL[0], &inL[size], &outL[0]);
-    //std::copy(&inR[0], &inR[size], &outR[0]);
-    // TODO: wants stereo input!
-    // copy left to right for now
-    std::copy(&inL[0], &inL[size], &outR[0]);
+    // find out number of audio inputs
+    uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
     
     
-    if(unit->bypass)
-        return;
+    if(numAudioInputs == 1)
+        Copy(inNumSamples, OUT(1), IN(kNumArgs));
+    
+    else if (numAudioInputs > 2) {
+        for(int i=2; i<numAudioInputs; ++i) {
+            uint16 out_chn = i & 1;
+            Accum(inNumSamples, OUT(out_chn), IN(i+kNumArgs));
+        }
+    }
+     
+    
+    //if(unit->bypass)
+      //  return;
     
     
-    CONSTRAIN(time, 0.f, 1.1f);         // allow for a little distortion :)
+    CONSTRAIN(time, 0.f, 1.25f);        // allow for a little distortion :)
     CONSTRAIN(amount, 0.f, 1.f);
     CONSTRAIN(diffusion, 0.f, 0.95f);   // TODO: check parameter range
     CONSTRAIN(lp, 0.f, 1.f);
@@ -225,7 +197,14 @@ void MiVerb_next( MiVerb *unit, int inNumSamples )
     reverb->set_diffusion(diffusion);
     reverb->set_lp(lp);
     
-    //unit->reverb_->set_input_gain(unit->input_gain);
+    reverb->set_input_gain(unit->input_gain);
+    
+    if(freeze) {
+        unit_freeze(unit);
+        // if 'freeze' is on, we want no direct signal
+        memset(outL, 0, size*sizeof(float));
+        memset(outR, 0, size*sizeof(float));
+    }
     
     reverb->Process(outL, outR, size);
     
