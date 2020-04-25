@@ -1,0 +1,143 @@
+TITLE:: MiElements
+summary:: Physical modelling based on Modal Synthesis.
+categories:: UGens>Filter
+related:: Classes/Ringz, Classes/Resonz, Classes/Klank, Classes/MiRings, Classes/MiPlaits
+
+DESCRIPTION::
+An exciter/resonator combination based on mutable instruments Elements eurorack module link::https://mutable-instruments.net/modules/elements/::.
+Original code by Émilie Gillet.
+
+Note:: For a full description please consult the original manual link::https://mutable-instruments.net/modules/elements/manual::.
+::
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: blow_in
+Blowing noise external audio input. It gets diffused, amplified by the envelope and the STRENGTH input and goes to the resonator.
+
+ARGUMENT:: strike_in
+External audio input, which directly goes to the resonator.
+
+ARGUMENT:: gate
+Triggers the exciter and the its envelope. Gate is open for positive input values, closed otherwise.
+
+ARGUMENT:: pit
+Pitch input.
+
+ARGUMENT:: strength
+Amplifiy or attenuate the excitation signal (0 -- 1).
+
+ARGUMENT:: contour
+Bow/Blow envelope contour, interpolating between AD, ADSR and AR envelopes.
+
+ARGUMENT:: bow_level
+Controls the amplitude of scratching/bowing noise  from the BOW generator sent to the resonator.
+
+ARGUMENT:: blow_level
+Controls the amount of granular blowing noise from the BLOW generator sent to the resonator.
+
+ARGUMENT:: strike_level
+Controls the amount of percussive noise from the STRIKE generator sent to the resonator. Note: for values past "2 o’clock", the percussive signal is sent to the resonator, but also “bleeds” on the main output signal for a more biting percussive sound.
+
+ARGUMENT:: flow
+Air flow of the BLOW generator. Scans through various colours of noise.
+
+ARGUMENT:: mallet
+Mallet type. Controls the type of percussive noise produced by the STRIKE generator.
+
+ARGUMENT:: bow_timb
+Controls the smoothness/granularity ot the BOW material.
+
+ARGUMENT:: blow_timb
+Controls the pitch/granulation rate of the BLOW noise generator.
+
+ARGUMENT:: strike_timb
+Controls the brightness/speed of the percussive excitation.
+
+ARGUMENT:: geom
+Controls the geometry and stiffness of the resonating structure. It goes from plates, to strings, to bars/tubes, to bells/bowls.
+
+ARGUMENT:: bright
+Controls the brightness of the resonator.
+
+ARGUMENT:: damp
+Controls the high frequency damping of the resonator.
+
+ARGUMENT:: pos
+Position: controls at which point the string/surface is excited.
+
+ARGUMENT:: space
+Controls the stereo width and amount of reverb.
+
+ARGUMENT:: model
+Selects the resonator model: 0:Modal, 1:String, 2:Strings
+
+ARGUMENT:: mul
+scale the output signal.
+
+ARGUMENT:: add
+add an offset.
+
+returns:: a stereo signal.
+
+
+
+EXAMPLES::
+
+code::
+
+(   // basic
+{
+	var input = PinkNoise.ar(0.3);
+	var gate = LFSaw.kr(2);
+	MiElements.ar(input, 0, gate, 45);
+}.play
+)
+
+(   // keep it ringing...
+{
+	var input = PinkNoise.ar(0.3);
+	MiElements.ar(0, input, 0, 48);
+}.play
+)
+
+(   // some bowing
+{
+	var mod = LFNoise1.kr(0.3,0.5,0.5);
+	MiElements.ar(gate: 1, pit: 32, contour: 0.5, bow_level: 1, bow_timb: mod);
+}.play
+)
+
+
+(   // some blowing
+{
+	var mod1 = LFNoise1.kr(0.4,0.5,0.5);
+	var mod2 = LFNoise1.kr(0.2,0.5,0.5);
+	var pit = LFNoise0.kr(0.1).range(32,44);
+	MiElements.ar(gate: 1, pit: pit, contour: 0.5, blow_level: 0.6, flow: mod1, blow_timb: mod2);
+}.play
+)
+
+
+(   // mallets + strength
+{
+	var gate = CoinGate.kr(0.4, Impulse.kr(8));
+	var stren = Latch.kr(WhiteNoise.kr().range(0,1), gate);
+	var strike_timbre = LFNoise1.kr(0.3,0.5,0.5);
+	MiElements.ar(gate: gate, pit:40, contour:0.5, strength: stren, strike_level: 0.5,
+		mallet:0.7, strike_timb: strike_timbre);
+}.play
+)
+
+( // strike input, playing chords (model: strings)
+{
+	var trig = Dust.ar(2);
+	var input = RLPF.ar(trig, 440,0.1,7);
+	var g = LFNoise1.kr(0.1,0.5,0.5);
+	MiElements.ar(0, input, 53, geom: g, bright:0.5, damp:0.9, model:2);
+}.play
+)
+
+::

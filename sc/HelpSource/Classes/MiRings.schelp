@@ -7,7 +7,8 @@ DESCRIPTION::
 A resonator based on mutable instruments Rings eurorack module link::https://mutable-instruments.net/modules/rings/::.
 Original code by Émilie Gillet.
 
-
+Note:: For a full description please consult the original manual link::https://mutable-instruments.net/modules/rings/manual::.
+::
 
 CLASSMETHODS::
 
