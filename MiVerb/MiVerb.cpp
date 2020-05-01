@@ -83,8 +83,8 @@ static void MiVerb_Ctor(MiVerb *unit) {
 
     //unit->reverb_->set_hp(0.995);
     
-    uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
-    Print("MiVerb > numAudioIns: %d\n", numAudioInputs);
+    //uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
+    //Print("MiVerb > numAudioIns: %d\n", numAudioInputs);
     
     SETCALC(MiVerb_next);
     ClearUnitOutputs(unit, 1);

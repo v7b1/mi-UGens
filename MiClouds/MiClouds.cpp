@@ -118,10 +118,10 @@ static void MiClouds_Ctor(MiClouds *unit) {
     
     unit->processor = new clouds::GranularProcessor;
     memset(unit->processor, 0, sizeof(*unit->processor));
-    Print("sizeof processor: %d\n", sizeof(*unit->processor));
+    //Print("sizeof processor: %d\n", sizeof(*unit->processor));
     unit->processor->Init(unit->large_buffer, largeBufSize, unit->small_buffer, smallBufSize);
     unit->processor->set_sample_rate(unit->sr);
-    unit->processor->set_num_channels(2);       // always use stereo setup ?
+    unit->processor->set_num_channels(2);       // always use stereo setup
     unit->processor->set_low_fidelity(false);
     unit->processor->set_playback_mode(clouds::PLAYBACK_MODE_GRANULAR);
     
@@ -198,7 +198,13 @@ void unit_info(MiClouds *unit) {
 void MiClouds_next( MiClouds *unit, int inNumSamples )
 {
     float   pitch = IN0(0);
-
+/*
+    float   pos_in = IN0(1);
+    float   size_in = IN0(2);
+    float   dens_in = IN0(3);
+    float   tex_in = IN0(4);
+    float   dry_wet_in = IN0(5);
+ */
     float   in_gain = IN0(6);
     float   spread = IN0(7);
     float   reverb = IN0(8);
@@ -227,27 +233,22 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
     float       *smoothed_value = unit->smoothed_value_;
     float       coef = unit->coef;
     
-//    bool        gate_connected = unit->gate_connected;
-//    bool        trig_connected;
     
     clouds::GranularProcessor   *gp = unit->processor;
     clouds::Parameters   *p = gp->mutable_parameters();
 
-    /*
-    CONSTRAIN(position, 0.f, 1.f);
-    CONSTRAIN(size, 0.f, 1.f);
-    CONSTRAIN(density, 0.f, 1.f);
-    CONSTRAIN(texture, 0.f, 1.f);
-*/
+    
     
     CONSTRAIN(pitch, -48.0f, 48.0f);
     smoothed_value[PARAM_PITCH] += coef * (pitch - smoothed_value[PARAM_PITCH]);
     p->pitch = smoothed_value[PARAM_PITCH];
     
+    
     for(auto i=1; i<PARAM_CHANNEL_LAST; ++i) {
         float value = IN0(i);
         CONSTRAIN(value, 0.0f, 1.0f);
         smoothed_value[i] += coef * (value - smoothed_value[i]);
+//        smoothed_value[i] = value;
     }
     
     p->position = smoothed_value[PARAM_POSITION];
@@ -255,6 +256,21 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
     p->density = smoothed_value[PARAM_DENSITY];
     p->texture = smoothed_value[PARAM_TEXTURE];
     p->dry_wet = smoothed_value[PARAM_DRYWET];
+    
+    
+    /*
+    CONSTRAIN(pos_in, 0.f, 1.f);
+    CONSTRAIN(size_in, 0.f, 1.f);
+    CONSTRAIN(dens_in, 0.f, 1.f);
+    CONSTRAIN(tex_in, 0.f, 1.f);
+    CONSTRAIN(dry_wet_in, 0.f, 1.f);
+    
+    p->position = pos_in;
+    p->size = size_in;
+    p->density = dens_in;
+    p->texture = tex_in;
+    p->dry_wet = dry_wet_in;
+    */
     
     CONSTRAIN(in_gain, 0.125f, 8.f);
     CONSTRAIN(spread, 0.f, 1.f);

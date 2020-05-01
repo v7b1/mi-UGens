@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 2.8)
 project (MiPlaits)
 
 # paths to our sources
-# set(SC_PATH /Users/vb/Documents/coding/sc-dev/supercollider-3.10)
 set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
 set(MI_PATH ${MUTABLE_PATH}/plaits)
@@ -137,6 +136,6 @@ add_library(MiPlaits MODULE
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
 
-
+if(APPLE)
 target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Accelerate")
-
+endif()

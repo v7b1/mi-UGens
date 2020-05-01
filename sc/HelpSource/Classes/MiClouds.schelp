@@ -9,7 +9,7 @@ MiClouds is a granular audio processor. It creates textures and soundscapes by c
 note::
 MiClouds is based on mutable instruments' Clouds eurorack module - link::https://mutable-instruments.net/modules/clouds::. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master:: ::
 
-Please refer to the original clouds manual for indepth information: link::https://mutable-instruments.net/modules/clouds/manual/::
+Please refer to the original Clouds manual for indepth information: link::https://mutable-instruments.net/modules/clouds/manual/::
 
 CLASSMETHODS::
 
@@ -29,6 +29,7 @@ Grain size (0. -- 1.)
 
 ARGUMENT:: dens
 Grain density (0. -- 1.)
+At 0.5, no grains, from 0 - 0.5, period grains, from 0.5 - 1.0 random grains.
 
 ARGUMENT:: tex
 (0. -- 1.)
@@ -51,6 +52,7 @@ Feedback amount (0. -- 1.)
 ARGUMENT:: freeze
 Freeze on/off. By default it's off, and audio is recorded into the internal buffer.
 If 'freeze' is on, the buffer is frozen and playback is fixed to what was recorded before.
+This doesn't apply for PLAYBACK_MODE_SPECTRAL.
 
 ARGUMENT:: mode
 Choose between 4 playback modes (0 -- 3):
@@ -63,7 +65,7 @@ ARGUMENT:: lofi
 Switch to lofi mode (buffer size 4 seconds). Will always erase what is inside the buffer.
 
 ARGUMENT:: trig
-Trigger input for single grains.
+Trigger input for single grains. A non-positive to positive transition causes a trigger to happen.
 
 returns:: left and right audio channel
 
@@ -72,7 +74,23 @@ EXAMPLES::
 
 code::
 
-(  // basic usage
+
+b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
+
+(  // basic granulation
+{
+	var input = PlayBuf.ar(1, b, 1, loop: 1)!2;
+
+	var dens = LFNoise1.kr(0.3).range(0.3, 0.45);
+	MiClouds.ar(input, 0, 0, 0, dens, 0.5, drywet: 1, mode: 0);
+
+}.play
+)
+
+
+
+
+(  //
 {
 	var imp = Dust.ar([0.8,1.1]);
 	var freq = Latch.ar(PinkNoise.ar(24,80), imp).midicps;
@@ -91,5 +109,72 @@ code::
 
 }.play
 )
+
+
+
+more:
+
+
+(  // using external grain trigger
+{
+	var input = PlayBuf.ar(1, b, 1, loop: 1)!2;
+
+	var dens = 0.5;
+	var trig = Dust.kr(10);
+
+	MiClouds.ar(input, -5, 0, 0.2, dens, 0.5, trig: trig, drywet: 1, mode: 0);
+
+}.play
+)
+
+
+
+// freezing and scratching
+(
+SynthDef(\scratch, { arg bufnum=0, freeze=0, mode=0;
+	var input = PlayBuf.ar(1, bufnum, 1, loop: 1)!2;
+	var position = LFNoise1.kr(0.5,0.5,0.5);
+	Out.ar(0, MiClouds.ar(input, 0, position, 0.1, 1, 0.5, drywet: 1, freeze: freeze, mode: mode));
+}).add;
+)
+
+x = Synth(\scratch)
+x.set(\freeze, 1)   // freeze internal buffer
+x.set(\freeze, 0)
+x.set(\mode, 1)
+x.set(\mode, 2)
+x.free
+
+
+
+
+(  // spectral mode (this mode causes high CPU peaks!)
+{
+	var input = PlayBuf.ar(1, b, 1, loop: 1)!2;
+
+	var size = 0.35;
+	var dens = 0.02;
+	var tex = 0.3;
+
+	MiClouds.ar(input, 0, 0, size, dens, tex, drywet: 1, rvb: 0.8, fb: 0.8, mode: 3);
+
+}.play
+)
+
+
+(  // more spectral stuff, WATCH THE VOLUME!
+{
+	var input = PlayBuf.ar(1, b, 1, loop: 1)!2;
+
+	var size = LFNoise1.kr(0.2).range(0.1,0.5).squared;
+	var dens = LFNoise1.kr(0.3,0.5,0.5);
+	var tex = LFNoise1.kr(0.3,0.5,0.5);
+
+	MiClouds.ar(input, 0, 0, size, dens, tex, drywet: 1, rvb: 0.6, fb: 0.6, lofi: 1, mode: 3);
+
+}.play
+)
+
+b.free
 
 ::

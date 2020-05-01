@@ -93,8 +93,10 @@ void Voice::Render(
   // Delay trigger by 1ms to deal with sequencers or MIDI interfaces whose
   // CV out lags behind the GATE out.
     // TODO: do we need this?
-  trigger_delay_.Write(modulations.trigger);
-  float trigger_value = trigger_delay_.Read(kTriggerDelay);
+//  trigger_delay_.Write(modulations.trigger);
+//  float trigger_value = trigger_delay_.Read(kTriggerDelay);
+    
+    float trigger_value = modulations.trigger;   // vb
   
   bool previous_trigger_state = trigger_state_;
   if (!previous_trigger_state) {

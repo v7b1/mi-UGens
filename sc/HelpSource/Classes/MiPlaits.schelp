@@ -1,7 +1,7 @@
 TITLE:: MiPlaits
 summary:: a macro oscillator
 categories:: UGens>Osc
-related:: Classes/Osc, Classes/MiRings, Classes/MiMu
+related:: Classes/Osc, Classes/MiBraids, Classes/MiRings, Classes/MiMu
 
 DESCRIPTION::
 A macro oscillator offering a multitude of synthesis methods.
@@ -41,13 +41,13 @@ ARGUMENT:: level
 Opens the internal low-pass gate, to simultaneously control the amplitude and brightness of the output signal. Also acts as an accent control when triggering the physical or percussive models.
 
 ARGUMENT:: fm_mod
-fm modulation amount, if internal env is activated by trigger
+fm modulation amount, if internal env is activated by trigger (-1. -- 1.)
 
 ARGUMENT:: timb_mod
-timbre modulation amount, if internal env is activated by trigger
+timbre modulation amount, if internal env is activated by trigger (-1. -- 1.)
 
 ARGUMENT:: morph_mod
-morph modulation amount, if internal env is activated by trigger
+morph modulation amount, if internal env is activated by trigger (-1. -- 1.)
 
 ARGUMENT:: decay
 decay rate of internal lowpass gate (0. -- 1.)
@@ -111,7 +111,7 @@ more:
 	var trigger = Impulse.kr(8);
     var harm = LFNoise2.kr(0.3,0.25,0.25);
 	var timbre = LFNoise1.kr(0.4,0.5,0.5);
-	var dec = LFNoise2.kr(0.2).range(0.2,0.8);
+	var dec = LFNoise2.kr(0.2).range(0.01,0.8);
     MiPlaits.ar(44, 5, harm, timbre, 0, trigger, decay: dec, mul: 0.5)
 }.play
 )
@@ -123,9 +123,10 @@ more:
     var timbre = 0.5;
     var morph = 0.5;
     var trigger = Impulse.kr(6);
-	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger);
-    var out = MiPlaits.ar(40, 6, harm, timbre, morph, trigger, lev.squared, decay: 0.5, timb_mod: 0.4, mul: 0.5);
-	out[0]!2
+	var lev = TRand.kr(trig: trigger);
+    var out = MiPlaits.ar(40, 6, harm, timbre, morph, trigger, lev.squared,
+		decay: 0.5, timb_mod: 0.4, mul: 0.5);
+	out[0] ! 2
 }.play
 )
 
@@ -135,7 +136,7 @@ more:
     var harm = 0.16;
     var timbre = 0;
 	var morph = 1;
-	var pit = 44 + Latch.kr(WhiteNoise.kr(5), Dust.kr(0.5)).round;
+	var pit = TIRand.kr(39, 49, Dust.kr(0.5));
 	var out = MiPlaits.ar(pit, 8, harm, timbre, morph, mul: 0.3);
 	out[0]!2
 }.play
@@ -157,7 +158,7 @@ more:
 {
     var harm = LFNoise2.kr(0.2).range(0,1);
     var timbre = 0.0;
-    var morph = 0.85; //LFNoise2.kr(0.2).range(0,1);
+    var morph = 0.85;
     var out = MiPlaits.ar(60, 11, harm, timbre, morph);
 	out[0]!2
 }.play
@@ -170,7 +171,7 @@ more:
     var timbre = 0.0;
     var morph = 0.85;
 	var trigger = Impulse.kr(1);
-	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger).squared;
+	var lev = TRand.kr(trig: trigger).squared;
     var out = MiPlaits.ar(56, 12, harm, timbre, morph, trigger, lev);
 	Mix.new(out)!2
 }.play
@@ -183,7 +184,7 @@ more:
     var timbre = 0.173;
     var morph = 0.827;
     var trigger = Impulse.kr(8);
-	var lev = Latch.kr(WhiteNoise.kr(0.5,0.5), trigger).squared;
+	var lev = TRand.kr(trig: trigger).squared;
     MiPlaits.ar(47, 14, harm, timbre, morph, trigger, lev, fm_mod: 0.2, timb_mod: 0.43, decay: 0.4)
 }.play
 )
@@ -201,16 +202,16 @@ more:
 
 (  // something...
 {
-	var trigger = Dust.ar( LFNoise2.ar(0.1).range(0.1, 7) );
-	var harmonics = SinOsc.ar(0.03, 0, 0.5, 0.5).range(0.0, 1.0);
-	var timbre = LFTri.ar(0.07, 0, 0.5, 0.5).range(0.0, 1.0);
-	var morph = LFTri.ar(0.11, 0, 0.5, 0.5).squared;
+	var trigger = Dust.kr( LFNoise2.kr(0.1).range(0.1, 7) );
+	var harmonics = SinOsc.kr(0.03, 0, 0.5, 0.5).range(0.0, 1.0);
+	var timbre = LFTri.kr(0.07, 0, 0.5, 0.5).range(0.0, 1.0);
+	var morph = LFTri.kr(0.11, 0, 0.5, 0.5).squared;
+	var pitch = TIRand.kr(24, 48, trigger);
+	var engine = TRand.kr(0, 15, trig: trigger).round;
+	var sub = SinOsc.ar(pitch.midicps, 0, 0.1);
 
-	var pitch = Latch.ar(WhiteNoise.ar(12, 36), trigger).round;
-	var engine = Latch.ar(WhiteNoise.ar(8,8), trigger).round;
-	var sub = SinOsc.ar(pitch.midicps, 0, 0.2);
 	var mi = MiPlaits.ar( pitch, engine, harmonics, timbre, morph,
-		trigger: trigger, decay: 0.8, lpg_colour: 0.2);
+		trigger: trigger, decay: 0.8, lpg_colour: 0.2, mul: 0.5);
 	mi + sub
 }.play
 )
