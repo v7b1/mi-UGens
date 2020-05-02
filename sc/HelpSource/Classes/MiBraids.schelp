@@ -1,0 +1,164 @@
+TITLE:: MiBraids
+summary:: a macro oscillator
+categories:: UGens>Generators>Deterministic
+related:: Classes/SinOsc, Classes/MiPlaits
+
+DESCRIPTION::
+MiBraids is a digital macro oscillator that offers an atlas of waveform generation techniques.
+
+
+note::
+MiBraids is based on mutable instruments' Braids eurorack module - link::https://mutable-instruments.net/modules/braids::. Original code by Émilie Gillet. ::
+
+Please refer to the original Braids manual for indepth information: link::https://mutable-instruments.net/modules/braids/manual/::
+
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: pitch
+MIDI pitch
+
+ARGUMENT:: timbre
+Meta parameter (0.0 -- 1.0)
+
+ARGUMENT:: color
+Meta parameter  (0.0 -- 1.0)
+
+ARGUMENT:: model
+Synthesis model (0 -- 47):
+0:CSAW, 1:MORPH, 2:SAW_SQUARE, 3:SINE_TRIANGLE, 4:BUZZ, 5:SQUARE_SUB, 6:SAW_SUB, 7:SQUARE_SYNC,
+8:SAW_SYNC, 9:TRIPLE_SAW, 10:TRIPLE_SQUARE, 11:TRIPLE_TRIANGLE, 12:TRIPLE_SINE, 13:TRIPLE_RING_MOD,
+14:SAW_SWARM, 15:SAW_COMB, 16:TOY, 17:DIGITAL_FILTER_LP, 18:DIGITAL_FILTER_PK, 19:DIGITAL_FILTER_BP,
+20:DIGITAL_FILTER_HP, 21:VOSIM, 22:VOWEL, 23:VOWEL_FOF, 24:HARMONICS, 25:FM, 26:FEEDBACK_FM,
+27:CHAOTIC_FEEDBACK_FM, 28:PLUCKED, 29:BOWED, 30:BLOWN, 31:FLUTED, 32:STRUCK_BELL, 33:STRUCK_DRUM,
+34:KICK, 35:CYMBAL, 36:SNARE, 37:WAVETABLES, 38:WAVE_MAP, 39:WAVE_LINE, 40:WAVE_PARAPHONIC,
+41:FILTERED_NOISE, 42:TWIN_PEAKS_NOISE, 43:CLOCKED_NOISE, 44:GRANULAR_CLOUD, 45:PARTICLE_NOISE,
+46:DIGITAL_MODULATION, 47:QUESTION_MARK
+
+ARGUMENT:: trig
+A trigger happens if this input goes from non-positive to positive.
+Depending on the selected synthesis model, the trigger input excites the physical models by an impulse or acts as a reset signal, bringing the phase of the oscillator(s) to 0.
+
+ARGUMENT:: resamp
+Resample option (0 -- 2), can only be changed at instantiation. 0: no resampling, MiBraids runs at local sampling rate, 1: resampling on, MiBriads runs an internal sr of 96kHz and downsamples to local sample rate (this is slightly more expensive), 2: no resampling, sample rate decimation and bit reduction is active.
+
+Note:: The following arguments are only active if resamp is 2. For resamp options 0 and 1 decim, reduc and signature are ignored!::
+
+ARGUMENT:: decim
+Samplerate decimation argument (1 -- 32)
+
+ARGUMENT:: bits
+Bit reduction argument (0 -- 6) ->
+0:16bit, 1:12bit, 2:8bit, 3:5bit, 4:4bit, 5:3bit, 6:2bit
+
+ARGUMENT:: ws
+Amount of waveshaping distortion (0. -- 1.)
+
+
+ARGUMENT:: mul
+Output will be multiplied by this value.
+
+
+returns:: Oscillator output
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+// basic example
+
+{ MiBraids.ar(60, 0.5, 0.5, 6, mul: 0.2)!2 }.play
+
+
+
+(   // some modulation
+{
+	var mod = LFNoise1.kr(0.5,0.5,0.5);
+	MiBraids.ar(40, mod, 0, 1, mul: 0.2) ! 2
+}.play
+)
+
+
+(   // vosim
+{
+	var pit = LFNoise0.kr(4).range(33, 66).round;
+	var timb = LFNoise1.kr(0.3,0.5,0.5);
+	var color = LFNoise1.kr(0.3,0.5,0.5);
+	MiBraids.ar(pit, timb, color, 21, mul: 0.2) ! 2;
+}.play
+)
+
+
+(   // fluted
+{
+	var pit = 38;
+	var timb = MouseX.kr(0.7,1);
+	var color = MouseY.kr();
+	MiBraids.ar(pit, timb, color, 31, resamp: 1, mul: 0.5) ! 2;
+}.play
+)
+
+
+(   // scanning
+{
+	var timb = LFNoise1.kr(0.3,0.5,0.5);
+	var color = LFNoise1.kr(0.3,0.5,0.5);
+	var pit = MouseY.kr(33,72);
+	var model = MouseX.kr(0, 47);
+	MiBraids.ar(pit, timb, color, model, mul: 0.2) ! 2;
+}.play
+)
+
+
+more:
+
+
+(   // paraphonic >)
+{
+	var timb = LFNoise1.kr(0.03,0.5,0.5);
+	var color = LFNoise1.kr(0.05,0.5,0.5);  // chord
+	MiBraids.ar(38, timb, color, 40, resamp: 1) ! 2;
+}.play
+)
+
+
+(   // trigger (plugged)
+{
+	var trig = Dust.kr(0.6);
+	var pit = TRand.kr(45,72,trig).round;
+	var timb = 0.5;
+	var color = LFNoise1.kr(0.3,0.5,0.5);
+
+	MiBraids.ar(pit, timb, color, 28, trig, mul: 0.4) ! 2;
+}.play
+)
+
+
+(   // kick it
+{
+	var trig =  Impulse.kr(4);
+	var pit = Latch.kr(PinkNoise.kr(), trig).range(30, 50).round;
+	var timb = LFNoise1.kr(0.4,0.5,0.5);
+	var color = LFNoise1.kr(0.3,0.5,0.5);
+
+	MiBraids.ar(pit, timb, color, 34, trig, mul: 0.5) ! 2;
+}.play
+)
+
+
+(   // sample rate, bit reduction and distortion
+{
+	var trig =  CoinGate.kr(0.3, Impulse.kr(4));
+	var decim = TRand.kr(1,32,trig);
+	var dist = LFTri.kr(0.2).range(0,1);
+
+	MiBraids.ar(40, 0.7, 0.7, 34, trig, resamp: 2, decim: decim, bits: 3, ws: dist, mul: 0.5) ! 2;
+}.play
+)
+
+::
