@@ -1,4 +1,8 @@
-SC_SRC=$HOME/Downloads/supercollider
+#
+# Build all projects
+# Usage: linux-build.sh <SUPERCOLLIDER SOURCE>
+#
+SC_SRC=$1
 FOLDERS=(MiBraids MiClouds MiElements MiMu MiPlaits MiRings MiVerb)
 
 for FOLDER in "${FOLDERS[@]}"

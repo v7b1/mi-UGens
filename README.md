@@ -30,6 +30,14 @@ or, for creating an Xcode project:
 - cmake -DSC_PATH="path/to/sc-src" -G Xcode ..
 - and build with Xcode gui
 
-
-
 For compiled mac versions see https://vboehm.net/downloads
+
+## Building for linux
+
+Use the included `linux-build.sh` script to build for linux. It takes the SuperCollider source code as it's first argument.
+
+```bash
+cd mi-UGens
+./linux-build.sh PATH/TO/SC/SOURCE/CODE
+```
+
