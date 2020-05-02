@@ -1,0 +1,3 @@
+[submodule "MiBraids/libsamplerate"]
+	path = MiBraids/libsamplerate
+	url = https://github.com/erikd/libsamplerate.git
