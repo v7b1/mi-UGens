@@ -12,13 +12,6 @@ MiElements : MultiOutUGen {
 			blow_level, strike_level, flow, mallet, bow_timb, blow_timb, strike_timb, geom,
 			bright, damp, pos, space, model).madd(mul, add);
 	}
-	/*
-	checkInputs {
-		if ( inputs.at(0).rate == 'control', {
-			^("audio input can't be control rate!");
-		});
-		^this.checkValidInputs
-	}*/
 
 	init { arg ... theInputs;
 		inputs = theInputs;

@@ -215,7 +215,9 @@ void Part::Process(
     }
   }
   
+    // TODO: vb, check metering code
   // Metering.
+    /*
   float exciter_level = voice_[active_voice_].exciter_level();
   float resonator_level = resonator_level_;
   for (size_t i = 0; i < size; ++i) {
@@ -237,11 +239,13 @@ void Part::Process(
 
   resonator_level *= 16.0f;
   scaled_resonator_level_ = resonator_level < 1.0f ? resonator_level : 1.0f;
-  
+  */
+    
+    
   // Apply reverb.
   reverb_.set_amount(reverb_amount);
   reverb_.set_diffusion(patch_.reverb_diffusion);
-  bool freeze = patch_.space >= 1.75f;
+    bool freeze = patch_.space >= 1.1;  // vb, 1.75f;
   if (freeze) {
     reverb_.set_time(1.0f);
     reverb_.set_input_gain(0.0f);

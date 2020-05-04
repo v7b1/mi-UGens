@@ -21,7 +21,7 @@ ARGUMENT:: strike_in
 External audio input, which directly goes to the resonator.
 
 ARGUMENT:: gate
-Triggers the exciter and the its envelope. Gate is open for positive input values, closed otherwise.
+Triggers the exciter and its envelope. Gate is open for positive input values, closed otherwise.
 
 ARGUMENT:: pit
 Pitch input.
@@ -33,7 +33,7 @@ ARGUMENT:: contour
 Bow/Blow envelope contour, interpolating between AD, ADSR and AR envelopes.
 
 ARGUMENT:: bow_level
-Controls the amplitude of scratching/bowing noise  from the BOW generator sent to the resonator.
+Controls the amplitude of scratching/bowing noise from the BOW generator sent to the resonator.
 
 ARGUMENT:: blow_level
 Controls the amount of granular blowing noise from the BLOW generator sent to the resonator.
@@ -124,10 +124,10 @@ code::
 (   // mallets + strength
 {
 	var gate = CoinGate.kr(0.4, Impulse.kr(8));
-	var stren = Latch.kr(WhiteNoise.kr().range(0,1), gate);
+	var stren = TRand.kr(trig: gate);
 	var strike_timbre = LFNoise1.kr(0.3,0.5,0.5);
-	MiElements.ar(gate: gate, pit:40, contour:0.5, strength: stren, strike_level: 0.5,
-		mallet:0.7, strike_timb: strike_timbre);
+	MiElements.ar(gate: gate, pit:40, strength: stren, strike_level: 0.5,
+		mallet:0.7, strike_timb: strike_timbre, bright: 0.4, damp: 0.8);
 }.play
 )
 

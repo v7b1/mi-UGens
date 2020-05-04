@@ -4,13 +4,14 @@ project (MiVerb)
 # paths to our sources
 set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
-set(MI_PATH ${MUTABLE_PATH}/rings)
+set(HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 
 include_directories(${SC_PATH}/include/plugin_interface)
 include_directories(${SC_PATH}/include/common)
 include_directories(${SC_PATH}/external_libraries/libsndfile/)
 
-include_directories(${MUTABLE_PATH})
+include_directories(${MUTABLE_PATH} ${HEADER_PATH})
 
 
 set(STMLIB_SOURCES 
@@ -21,9 +22,8 @@ set(STMLIB_SOURCES
 )
 
 set(MI_SOURCES
-	# ${MI_PATH}/dsp/dsp.h # do we need this at all??
-	${MI_PATH}/dsp/fx/reverb.h
-	${MI_PATH}/dsp/fx/fx_engine.h
+	${HEADER_PATH}/reverb.h
+	${HEADER_PATH}/fx_engine.h
 )
 
 set(BUILD_SOURCES 
@@ -44,4 +44,4 @@ add_library(
 )
 
 # create groups in our project
-source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
+source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES})

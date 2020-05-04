@@ -256,14 +256,12 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     p->resonator_position = position;
     
     CONSTRAIN(space, 0.0f, 0.9995f);
-    p->space = space;
+    p->space = space * 1.11f; // vb, use the last bit to trigger rev freeze
 
     
     // gate input
     ps.gate = gate_in > 0.f;
     
-//    if(ps.gate)
-//        Print("gate!\n");
     
     int kend = inNumSamples / size;
     

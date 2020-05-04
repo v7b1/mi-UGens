@@ -3,12 +3,12 @@
 MiVerb : MultiOutUGen {
 
 	*ar {
-		arg inputArray, time=0.7, amount=0.5, diff=0.7, damp=0.5, freeze=0, mul=1.0, add=0.0;
-		^this.multiNewList(['audio', time, amount, diff, 1.0-damp, freeze] ++ inputArray.asArray).madd(mul);
+		arg inputArray, time=0.7, drywet=0.5, damp=0.5, hp=0.05, freeze=0, diff=0.625, mul=1.0, add=0.0;
+		^this.multiNewList(['audio', time, drywet, damp, hp, freeze, diff] ++ inputArray.asArray).madd(mul);
 	}
-	//checkInputs { ^this.checkSameRateAsFirstInput }
+
 	checkInputs {
-		var numArgs = 5;
+		var numArgs = 6;
 		var numAudioInputs = this.numInputs - numArgs;
 
 		numAudioInputs.do( { |i|
@@ -17,10 +17,6 @@ MiVerb : MultiOutUGen {
 				^("input is not audio rate:" + inputs.at(index) + inputs.at(index).rate);
 			});
 		});
-		/*
-		if ( inputs.at(5).rate != 'audio', {
-			^("input is not audio rate:" + inputs.at(5) + inputs.at(5).rate);
-		});*/
 		^this.checkValidInputs;
 	}
 

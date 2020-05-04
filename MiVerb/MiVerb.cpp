@@ -31,21 +31,18 @@
 
 #include "SC_PlugIn.h"
 
-#include "rings/dsp/fx/reverb.h"
+#include "reverb.h"
 
 static InterfaceTable *ft;
 
-const uint16 kNumArgs = 5;
+const uint16 kNumArgs = 6;
 
 
 struct MiVerb : public Unit {
     
-    float      sr;
-    //bool        bypass;
-    
-    rings::Reverb   *reverb_;
-    uint16_t   *reverb_buffer;
-    float      input_gain;
+    Reverb      reverb_;
+    uint16_t    *reverb_buffer;
+    float       input_gain;
     
 };
 
@@ -67,28 +64,27 @@ static void MiVerb_Ctor(MiVerb *unit) {
         ClearUnitOutputs(unit, BUFLENGTH); // ??
         return;
     }
-    
-    //unit->bypass = false;
-    
-    unit->reverb_ = new rings::Reverb;
-    unit->reverb_->Init(unit->reverb_buffer);
-    
-    unit->input_gain = 0.5f;
-    
-    unit->reverb_->set_time(0.7f);
-    unit->reverb_->set_input_gain(unit->input_gain);
-    unit->reverb_->set_lp(0.3f);
-    unit->reverb_->set_amount(0.5f);
-    unit->reverb_->set_diffusion(0.7f);
 
-    //unit->reverb_->set_hp(0.995);
+    
+    memset(&unit->reverb_, 0, sizeof(unit->reverb_));
+    unit->reverb_.Init(unit->reverb_buffer, SAMPLERATE);
+    
+    unit->input_gain = 0.2f;
+    
+    unit->reverb_.set_time(0.7f);
+    unit->reverb_.set_input_gain(unit->input_gain);
+    unit->reverb_.set_lp(0.3f);
+    unit->reverb_.set_amount(0.5f);
+    unit->reverb_.set_diffusion(0.625f);       // original value form Dattorro paper
+
+    unit->reverb_.set_hp(0.995f);
     
     //uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
     //Print("MiVerb > numAudioIns: %d\n", numAudioInputs);
     
     SETCALC(MiVerb_next);
-    ClearUnitOutputs(unit, 1);
-    //MiVerb_next(unit, 1);
+    ClearUnitOutputs(unit, BUFLENGTH);
+    //MiVerb_next(unit, BUFLENGTH);
     
 }
 
@@ -98,17 +94,16 @@ static void MiVerb_Dtor(MiVerb *unit) {
     if(unit->reverb_buffer) {
         RTFree(unit->mWorld, unit->reverb_buffer);
     }
-    if(unit->reverb_) delete unit->reverb_;
+    
 }
-
 
 
 
 void unit_freeze(MiVerb *unit) {
    
-    unit->reverb_->set_time(1.0);
-    unit->reverb_->set_input_gain(0.0);
-    unit->reverb_->set_lp(1.0);
+    unit->reverb_.set_time(1.0);
+    unit->reverb_.set_input_gain(0.0);
+    unit->reverb_.set_lp(1.0);
     
 }
 
@@ -122,15 +117,10 @@ inline void SoftClip_block(float *inout, size_t size) {
             *inout = -1.0f;
         } else if (x > 3.0f) {
             *inout = 1.0f;
+        } else {
+            float x2 = x * x;
+            *inout *= (27.0f + x2) / (27.0f + 9.0f * x2);
         }
-        inout++;
-    }
-}
-
-inline void SoftLimit_block(float *inout, size_t size) {
-    while(size--) {
-        float x2 = (*inout)*(*inout);
-        *inout *= (27.0f + x2) / (27.0f + 9.0f * x2);
         inout++;
     }
 }
@@ -156,16 +146,17 @@ inline float SoftClip(float x) {
 void MiVerb_next( MiVerb *unit, int inNumSamples )
 {
     float   time = IN0(0);
-    float   amount = IN0(1);
-    float   diffusion = IN0(2);
-    float   lp = IN0(3);
+    float   drywet = IN0(1);
+    float   damp = IN0(2);
+    float   hp = IN0(3);
     bool    freeze = IN0(4) > 0.f;
+    float   diffusion = IN0(5);
     
     float   *outL = OUT(0);
     float   *outR = OUT(1);
     
     size_t size = inNumSamples;
-    rings::Reverb *reverb = unit->reverb_;
+    Reverb *reverb = &unit->reverb_;
     
     // find out number of audio inputs
     uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
@@ -180,38 +171,39 @@ void MiVerb_next( MiVerb *unit, int inNumSamples )
             Accum(inNumSamples, OUT(out_chn), IN(i+kNumArgs));
         }
     }
-     
-    
-    //if(unit->bypass)
-      //  return;
-    
-    
-    CONSTRAIN(time, 0.f, 1.25f);        // allow for a little distortion :)
-    CONSTRAIN(amount, 0.f, 1.f);
-    CONSTRAIN(diffusion, 0.f, 0.95f);   // TODO: check parameter range
-    CONSTRAIN(lp, 0.f, 1.f);
 
-    
-    reverb->set_time(time);
-    reverb->set_amount(amount);
-    reverb->set_diffusion(diffusion);
-    reverb->set_lp(lp);
-    
-    reverb->set_input_gain(unit->input_gain);
     
     if(freeze) {
         unit_freeze(unit);
-        // if 'freeze' is on, we want no direct signal
-        memset(outL, 0, size*sizeof(float));
-        memset(outR, 0, size*sizeof(float));
+        // if 'freeze' is on, we want no direct signal // hm, rather not...
+        //memset(outL, 0, size*sizeof(float));
+        //memset(outR, 0, size*sizeof(float));
     }
+    else {
+        CONSTRAIN(time, 0.f, 1.25f);        // allow for a little distortion :)
+        damp = 1.01f - damp;
+        CONSTRAIN(damp, 0.f, 1.f);
+        
+        reverb->set_time(time);
+        reverb->set_lp(damp);
+        reverb->set_input_gain(unit->input_gain);
+    }
+    
+    CONSTRAIN(drywet, 0.f, 1.f);
+    CONSTRAIN(diffusion, 0.f, 0.95f);   // TODO: check parameter range
+    CONSTRAIN(hp, 0.f, 1.f);
+    hp *= hp;
+    hp = 1.f - hp;
+    
+    reverb->set_amount(drywet);
+    reverb->set_diffusion(diffusion);
+    reverb->set_hp(hp);
+    
     
     reverb->Process(outL, outR, size);
     
     SoftClip_block(outL, size);
     SoftClip_block(outR, size);
-    SoftLimit_block(outL, size);
-    SoftLimit_block(outR, size);
 
 }
 
