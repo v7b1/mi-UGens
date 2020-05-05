@@ -15,13 +15,13 @@ CLASSMETHODS::
 METHOD:: ar
 
 ARGUMENT:: blow_in
-Blowing noise external audio input. It gets diffused, amplified by the envelope and the STRENGTH input and goes to the resonator.
+External audio input, which gets diffused, amplified by the envelope and the STRENGTH input and goes to the resonator.
 
 ARGUMENT:: strike_in
 External audio input, which directly goes to the resonator.
 
 ARGUMENT:: gate
-Triggers the exciter and its envelope. Gate is open for positive input values, closed otherwise.
+Triggers the exciter and its envelope. Gate is open for positive values, closed otherwise.
 
 ARGUMENT:: pit
 Pitch input.
@@ -74,6 +74,10 @@ Controls the stereo width and amount of reverb.
 ARGUMENT:: model
 Selects the resonator model: 0:Modal, 1:String, 2:Strings
 
+ARGUMENT:: easteregg
+Flag to activate 'easteregg' mode (0/1), which turns MiElements into a dark 2x2-op FM synth.
+TODO: decribe controls...
+
 ARGUMENT:: mul
 scale the output signal.
 
@@ -91,17 +95,30 @@ code::
 (   // basic
 {
 	var input = PinkNoise.ar(0.3);
-	var gate = LFSaw.kr(2);
-	MiElements.ar(input, 0, gate, 45);
+	var gate = LFPulse.kr(2);
+	var pitch = 45;
+	MiElements.ar(input, 0, gate, pitch);
 }.play
 )
 
-(   // keep it ringing...
+
+( // keep it ringing... using 'blow' input and contour set to 0.5
+{
+	var input = PinkNoise.ar(0.3);
+	var gate = 1;
+	MiElements.ar(input, 0, gate, 48, contour:0.5);
+}.play
+)
+
+( // keep it ringing... using the 'strike' input (which bypasses the exciter section)
 {
 	var input = PinkNoise.ar(0.3);
 	MiElements.ar(0, input, 0, 48);
 }.play
 )
+
+
+more:
 
 (   // some bowing
 {
@@ -121,22 +138,74 @@ code::
 )
 
 
-(   // mallets + strength
+(  // contour + blowing
 {
-	var gate = CoinGate.kr(0.4, Impulse.kr(8));
-	var stren = TRand.kr(trig: gate);
-	var strike_timbre = LFNoise1.kr(0.3,0.5,0.5);
-	MiElements.ar(gate: gate, pit:40, strength: stren, strike_level: 0.5,
-		mallet:0.7, strike_timb: strike_timbre, bright: 0.4, damp: 0.8);
+	var gate = LFPulse.kr(1, 0.01);
+	var pitch = SinOsc.kr(5,0,0.1, 53);
+	var cont = SinOsc.kr(0.8).range(0,1);
+	var flow = LFNoise1.kr(0.1).range(0, 1);
+
+	MiElements.ar(gate: gate, pit: pitch, contour: cont, blow_level:0.5, flow: flow,
+		blow_timb: 0.3, bright:0.3, damp:0.8);
 }.play
 )
 
+
+
+(   // Metal, bells
+{
+	var trig = Dust.ar(2.5);
+	var input = Decay.ar(trig, 0.01);
+	var g = TBrownRand.ar(0.5, 0.9, 0.2, trig: CoinGate.ar(0.05, trig));
+	var space = LFNoise1.kr(0.1).range(0.5, 1);
+
+	MiElements.ar(0, input, 0, 40, geom: g, bright:0.4, damp:0.9, space: space);
+}.play
+)
+
+
 ( // strike input, playing chords (model: strings)
 {
-	var trig = Dust.ar(2);
-	var input = RLPF.ar(trig, 440,0.1,7);
+	var input = Decay.ar(Dust.ar(1), 0.01);
 	var g = LFNoise1.kr(0.1,0.5,0.5);
-	MiElements.ar(0, input, 53, geom: g, bright:0.5, damp:0.9, model:2);
+	MiElements.ar(0, input, pit: 53, geom: g, bright:0.5, damp:0.9, model:2);
+}.play
+)
+
+
+(   // mallets + strength
+{
+	var gate = CoinGate.kr(0.4, Impulse.kr(6));
+	var stren = TRand.kr(trig: gate);
+	var strike_timbre = LFNoise1.kr(0.3,0.5,0.5);
+
+	MiElements.ar(gate: gate, pit:40, strength: stren, strike_level: 0.5,
+		mallet:0.7, strike_timb: strike_timbre, bright: 0.3, damp: 0.85, space: 0.6);
+}.play
+)
+
+
+( // mallets + particles
+{
+	var strike_timbre = LFNoise1.kr(0.3,0.5,0.5);
+	var g = LFNoise2.kr(0.1).range(0.4,0.7);
+	var maltype = 1;     // mallet type: 1 --> uses internal model of bouncing particles
+	MiElements.ar(gate: 1, pit:40, geom: g, contour:0.5, strike_level: 0.5, mallet: maltype,
+		strike_timb: strike_timbre);
+}.play
+)
+
+
+(   // easteregg: a hidden 2x2-op FM synth
+{
+	var mod = LFNoise1.kr(0.3,0.5,0.5);
+	var ratio = 0.25;
+	var ratio2 = 0.25;
+	var ratio3 = 0.51;
+
+	MiElements.ar(gate:1, contour: 0.5, pit: 48, bow_level: ratio, blow_level: 0.6, strike_level: 0.5,
+		flow: ratio2, mallet: ratio3, bow_timb: mod, blow_timb: 0.3, strike_timb: 0.6,
+		strength: 0.9, geom: 0.12, bright: 0.6, damp: 0.5, space: 0.7, easteregg: 1);
 }.play
 )
 

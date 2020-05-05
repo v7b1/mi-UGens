@@ -121,6 +121,10 @@ void FmOscillator::Process(
     const float* external_fm,
     float* destination,
     size_t size) {
+    
+    frequency += Dsp::getIntervalCorrection();   // vb, pitch correction
+    
+    
   ratio = Interpolate(lut_fm_frequency_quantizer, ratio, 128.0f);
 
   uint32_t inc_carrier = midi_to_increment(frequency);
@@ -187,6 +191,9 @@ void OminousVoice::Init() {
     
     spatializer_[i].Init(i == 0 ? - 0.7f : 0.7f);
   }
+    
+    // vb init additions:
+    damping_ = feedback_ = 0.f;
 }
 
 void OminousVoice::ConfigureEnvelope(const Patch& patch) {

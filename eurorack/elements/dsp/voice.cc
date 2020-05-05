@@ -191,12 +191,12 @@ void Voice::Process(
     input_sample += strike_in[i];
     raw[i] = input_sample * 0.5f;
   }
-  
+  /* -- vb
   // Update meter for exciter.
   for (size_t i = 0; i < size; ++i) {
     float error = raw[i] * raw[i] - exciter_level_;
     exciter_level_ += error * (error > 0.0f ? 0.5f : 0.001f);
-  }
+  }*/
   
   // Some exciters can cause palm mutes on release.
   float damping = patch.resonator_damping;

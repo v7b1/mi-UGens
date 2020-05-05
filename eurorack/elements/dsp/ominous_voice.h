@@ -227,7 +227,7 @@ class OminousVoice {
     }
     int32_t pitch = static_cast<int32_t>(midi_pitch * 256.0f);
     pitch = 32768 + stmlib::Clip16(pitch - 20480);
-    return lut_midi_to_f_high[pitch >> 8] * lut_midi_to_f_low[pitch & 0xff] * Dsp::getSrFactor();
+    return lut_midi_to_f_high[pitch >> 8] * lut_midi_to_f_low[pitch & 0xff] * Dsp::getSrFactor(); // vb
   }
   
   float external_fm_oversampled_[kOversamplingUp * kMaxBlockSize];

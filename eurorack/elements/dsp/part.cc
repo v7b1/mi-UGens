@@ -245,7 +245,7 @@ void Part::Process(
   // Apply reverb.
   reverb_.set_amount(reverb_amount);
   reverb_.set_diffusion(patch_.reverb_diffusion);
-    bool freeze = patch_.space >= 1.1;  // vb, 1.75f;
+    bool freeze = patch_.space >= 1.1f;  // vb, 1.75f;
   if (freeze) {
     reverb_.set_time(1.0f);
     reverb_.set_input_gain(0.0f);

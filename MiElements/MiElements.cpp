@@ -51,11 +51,11 @@ struct MiElements : public Unit {
     elements::PerformanceState  ps;
     elements::Patch             *p;
     
-    float               blow_in[elements::kMaxBlockSize];
-    float               strike_in[elements::kMaxBlockSize];
-    
+    float               *blow_in;
+    float               *strike_in;
+    float               *silence;
+
     uint16_t            *reverb_buffer;
-    void                *info_out;
     float               *out, *aux;     // output buffers
     double              sr;
     long                sigvs;
@@ -86,41 +86,24 @@ static void MiElements_Ctor(MiElements *unit) {
         return;
     }
     
-    unit->out = (float *)RTAlloc(unit->mWorld, 4096*sizeof(float));
-    unit->aux = (float *)RTAlloc(unit->mWorld, 4096*sizeof(float));
+    unit->out = (float *)RTAlloc(unit->mWorld, 1024*sizeof(float));
+    unit->aux = (float *)RTAlloc(unit->mWorld, 1024*sizeof(float));
+    
+    unit->silence = (float *)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
+    memset(unit->silence, 0, BUFLENGTH*sizeof(float));
+
     
     // Init and seed the random parameters and generators with the serial number.
     unit->part = new elements::Part;
     memset(unit->part, 0, sizeof(*unit->part));
     unit->part->Init(unit->reverb_buffer);
-    //unit->part->Seed((uint32_t*)(0x1fff7a10), 3);
     uint32_t mySeed = 0x1fff7a10;
     unit->part->Seed(&mySeed, 3);
     
-    unit->part->set_easter_egg(false);
+    unit->part->set_easter_egg(false);          // TODO: add easteregg option
     unit->p = unit->part->mutable_patch();
     
     unit->blockCount = 0;
-    
-    
-    /*
-    // check input rates
-    if(INRATE(0) == calc_FullRate)
-        unit->performance_state.internal_exciter = false;
-    else
-        unit->performance_state.internal_exciter = true;
-    
-    if(INRATE(1) == calc_ScalarRate)
-        unit->performance_state.internal_strum = true;
-    else
-        unit->performance_state.internal_strum = false;
-    
-    if(INRATE(2) == calc_ScalarRate)
-        unit->performance_state.internal_note = true;
-    else
-        unit->performance_state.internal_note = false;
-*/
-    
     
     unit->p->exciter_envelope_shape = 0.1f;
     unit->p->exciter_bow_level = 0.f;
@@ -153,6 +136,10 @@ static void MiElements_Dtor(MiElements *unit) {
     if(unit->reverb_buffer) {
         RTFree(unit->mWorld, unit->reverb_buffer);
     }
+    if(unit->part)
+        delete unit->part;
+    if(unit->silence)
+       RTFree(unit->mWorld, unit->silence);
     if(unit->out)
         RTFree(unit->mWorld, unit->out);
     if(unit->aux)
@@ -166,8 +153,8 @@ void MiElements_next( MiElements *unit, int inNumSamples)
 {
     float   *in0 = IN(0);
     float   *in1 = IN(1);
+    float   *gate_in = IN(2);
     
-    float   gate_in = IN0(2);
     float   voct_in = IN0(3);
     float   strength = IN0(4);
     float   contour = IN0(5);
@@ -185,6 +172,7 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     float   position = IN0(17);
     float   space = IN0(18);
     int     model = IN0(19);
+    bool    easter_egg = IN0(20) > 0.f;
     
     float   *outL = OUT(0);
     float   *outR = OUT(1);
@@ -206,7 +194,7 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     unit->part->set_resonator_model(static_cast<elements::ResonatorModel>(model));
     
     // set pitch
-    CONSTRAIN(voct_in, 20.f, 120.f);
+    CONSTRAIN(voct_in, 8.f, 120.f);
     ps.note = voct_in;
     
     CONSTRAIN(strength, 0.f, 1.f);
@@ -259,8 +247,31 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     p->space = space * 1.11f; // vb, use the last bit to trigger rev freeze
 
     
+    unit->part->set_easter_egg(easter_egg);
+    
     // gate input
-    ps.gate = gate_in > 0.f;
+    if(INRATE(2) == calc_FullRate) {
+        float sum = 0.f;
+        for(int i=0; i<inNumSamples; ++i) {
+            sum += gate_in[i];
+        }
+        ps.gate = sum > 0.001f;
+    }
+    else
+        ps.gate = gate_in[0] > 0.f;
+    
+    
+    // check input rates
+    if(INRATE(0) == calc_FullRate)
+        blow_in = in0;
+    else
+        blow_in = unit->silence;
+    
+    if(INRATE(1) == calc_FullRate)
+        strike_in = in1;
+    else
+        strike_in = unit->silence;
+    
     
     
     int kend = inNumSamples / size;
@@ -268,18 +279,7 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     for(size_t k = 0; k < kend; ++k) {
         int offset = k * size;
         
-        if(INRATE(0) == calc_FullRate)
-            memcpy(blow_in, in0+offset, size*sizeof(float));
-        else
-            memset(blow_in, 0, size*sizeof(float));
-        
-        if(INRATE(1) == calc_FullRate)
-            memcpy(strike_in, in1+offset, size*sizeof(float));
-        else
-            memset(strike_in, 0, size*sizeof(float));
-        
-        
-        unit->part->Process(ps, blow_in, strike_in, out, aux, size);
+        unit->part->Process(ps, blow_in+offset, strike_in+offset, out, aux, size);
         
         for (size_t i = 0; i < size; ++i) {
             int index = i + offset;
@@ -288,7 +288,6 @@ void MiElements_next( MiElements *unit, int inNumSamples)
         }
         
     }
-    
     
 }
 

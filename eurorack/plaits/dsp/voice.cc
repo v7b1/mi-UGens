@@ -247,30 +247,6 @@ void Voice::Render(
       aux,
       size);
     
-    // TODO: change this to skip conversion to '16bit int'
-    // and stay with floats instead.
-    /*
-    out_post_processor_.Process(
-                                pp_s.out_gain,
-                                lpg_bypass,
-                                lpg_envelope_.gain(),
-                                lpg_envelope_.frequency(),
-                                lpg_envelope_.hf_bleed(),
-                                out_buffer_,
-                                &frames->out,
-                                size,
-                                2);
-    
-    aux_post_processor_.Process(
-                                pp_s.aux_gain,
-                                lpg_bypass,
-                                lpg_envelope_.gain(),
-                                lpg_envelope_.frequency(),
-                                lpg_envelope_.hf_bleed(),
-                                aux_buffer_,
-                                &frames->aux,
-                                size,
-                                2);*/
      }
   
 }  // namespace plaits

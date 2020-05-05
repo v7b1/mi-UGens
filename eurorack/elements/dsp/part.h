@@ -93,7 +93,7 @@ class Part {
   bool previous_gate_;
   float note_[kNumVoices];
   
-  size_t num_voices_;
+  //size_t num_voices_;
   size_t active_voice_;
   
   float silence_[kMaxBlockSize];

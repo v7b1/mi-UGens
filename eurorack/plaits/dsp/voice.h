@@ -210,8 +210,9 @@ class Voice {
       float minimum_value,
       float maximum_value) {
     float value = base_value;
-    modulation_amount *= std::max(fabsf(modulation_amount) - 0.05f, 0.05f);
-    modulation_amount *= 1.05f;
+//    modulation_amount *= std::max(fabsf(modulation_amount) - 0.05f, 0.05f);
+//    modulation_amount *= 1.05f;
+      modulation_amount *= fabs(modulation_amount);     // vb
     
     float modulation = use_external_modulation
         ? external_modulation
