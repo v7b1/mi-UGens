@@ -81,7 +81,7 @@ static void MiPlaits_Ctor(MiPlaits *unit) {
     memset(unit->shared_buffer, 0, 32768);
 
     if(unit->shared_buffer == NULL) {
-        printf("mem alloc failed!");
+        Print("mem alloc failed!");
         unit = NULL;
     }
     stmlib::BufferAllocator allocator(unit->shared_buffer, 32768);

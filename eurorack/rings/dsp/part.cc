@@ -496,7 +496,6 @@ void Part::Process(
     } else {
       active_voice_ = (active_voice_ + 1) % polyphony_;
     }
-      //printf("active_voice: %d\n", active_voice_);
   }
   
   note_[active_voice_] = note_filter_.note();

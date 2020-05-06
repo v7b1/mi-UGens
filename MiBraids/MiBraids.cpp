@@ -42,7 +42,11 @@
 #include "braids/quantizer_scales.h"
 #include "braids/vco_jitter_source.h"
 
-#include "Accelerate/Accelerate.h"
+
+#ifdef __APPLE__
+#    include "Accelerate/Accelerate.h"
+#endif
+
 #include "samplerate.h"
 
 
@@ -162,16 +166,16 @@ static void MiBraids_Ctor(MiBraids *unit) {
     switch(resamp) {
         case 0:
             SETCALC(MiBraids_next);
-            Print("resamp: OFF\n");
+            //Print("resamp: OFF\n");
             break;
         case 1:
             unit->pd.osc->Init(MI_SAMPLERATE);
             SETCALC(MiBraids_next_resamp);
-            Print("internal sr: 96kHz - resamp: ON\n");
+            Print("MiBraids: internal sr: 96kHz - resamp: ON\n");
             break;
         case 2:
             SETCALC(MiBraids_next_reduc);
-            Print("resamp: OFF, reduction: ON\n");
+            Print("MiBraids: resamp: OFF, reduction: ON\n");
             break;
     }
     
@@ -239,10 +243,12 @@ void MiBraids_next( MiBraids *unit, int inNumSamples)
         float sum = 0.f;
         
         if (INRATE(4) == calc_FullRate) {  // trigger input is audio rate
-            // TODO: add vDSP vector summation
+#ifdef __APPLE__
+            vDSP_sve(trig_in, 1, &sum, inNumSamples);
+#else
             for(int i=0; i<inNumSamples; ++i)
                 sum += trig_in[i];
-            
+#endif
         }
         else {          // trigger input is control rate
             sum = trig_in[0];
@@ -314,11 +320,14 @@ void MiBraids_next_resamp( MiBraids *unit, int inNumSamples)
         
         float sum = 0.f;
         
-        if (INRATE(4) == calc_FullRate) {
-            // trigger input is audio rate
-            // TODO: add vDSP vector summation
+        if (INRATE(4) == calc_FullRate) {   // trigger input is audio rate
+            
+#ifdef __APPLE__
+            vDSP_sve(trig_in, 1, &sum, inNumSamples);
+#else
             for(int i=0; i<inNumSamples; ++i)
                 sum += trig_in[i];
+#endif
             
         }
         else {          // trigger input is control rate
@@ -392,9 +401,12 @@ void MiBraids_next_reduc( MiBraids *unit, int inNumSamples)
         float sum = 0.f;
         
         if (INRATE(4) == calc_FullRate) {  // trigger input is audio rate
-            // TODO: add vDSP vector summation
+#ifdef __APPLE__
+            vDSP_sve(trig_in, 1, &sum, inNumSamples);
+#else
             for(int i=0; i<inNumSamples; ++i)
                 sum += trig_in[i];
+#endif
             
         }
         else {          // trigger input is control rate
