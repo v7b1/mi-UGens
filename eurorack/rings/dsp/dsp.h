@@ -39,16 +39,14 @@ namespace rings {
   //  static const float kSampleRate = 44100.f; //48000.0f;
 //const float a3 = 440.0f / kSampleRate;
     
-    // TODO: changing this will affect the way the unit reacts
-    // e.g. damping in easteregg mode etc.
-    const size_t kMaxBlockSize = 128;     //24;
+
+    const size_t kMaxBlockSize = 32;     //24;
     
     // add some code to make SR settable
     class Dsp {
         private:
         static float sr;
         static float a3;
-        //static size_t maxBlockSize;
         
         public:
         static float getSr() {return sr;}
@@ -57,11 +55,6 @@ namespace rings {
             sr = newsr;
             a3 = 440.0f / sr;
         }
-        /*
-        static size_t getBlockSize() {return maxBlockSize;}
-        static void setBlockSize(int newBlockSize) {
-            maxBlockSize = static_cast<size_t>(newBlockSize);
-        }*/
     };
 
 }  // namespace rings

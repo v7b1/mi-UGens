@@ -38,10 +38,7 @@
 
 float rings::Dsp::sr = 48000.0;
 float rings::Dsp::a3 = 440.0 / 48000.0;
-int kBlockSize = 32;
-int kMaxBlockSize = rings::kMaxBlockSize;
-
-// TODO: get rid of kMaxBlockSize, so we only have one: kBlockSize
+int kBlockSize = rings::kMaxBlockSize;
 
 static InterfaceTable *ft;
 
@@ -73,12 +70,7 @@ static void MiRings_Ctor(MiRings *unit) {
     
     rings::Dsp::setSr(SAMPLERATE);
 
-    if(BUFLENGTH > kMaxBlockSize) {
-        Print("MiRings ERROR: sc block size too big!\n");
-        unit = NULL;
-        return;
-    }
-    else if (BUFLENGTH < kBlockSize) {
+    if (BUFLENGTH < kBlockSize) {
         Print("MiRings ERROR: sc block size too small!\n");
         unit = NULL;
         return;
