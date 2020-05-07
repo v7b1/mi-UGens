@@ -38,7 +38,10 @@ namespace rings {
   
   //  static const float kSampleRate = 44100.f; //48000.0f;
 //const float a3 = 440.0f / kSampleRate;
-    const size_t kMaxBlockSize = 128; //64;    //24;
+    
+    // TODO: changing this will affect the way the unit reacts
+    // e.g. damping in easteregg mode etc.
+    const size_t kMaxBlockSize = 128;     //24;
     
     // add some code to make SR settable
     class Dsp {

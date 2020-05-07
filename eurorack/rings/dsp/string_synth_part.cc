@@ -338,6 +338,7 @@ void StringSynthPart::Process(
   float envelope_values[kMaxStringSynthPolyphony];
   ProcessEnvelopes(patch.damping, envelope_flags, envelope_values);
   
+    // vb, do we need to do this?
   copy(&in[0], &in[size], &aux[0]);
   copy(&in[0], &in[size], &out[0]);
   int32_t chord_size = min(kStringSynthVoices / polyphony_, kMaxChordSize);

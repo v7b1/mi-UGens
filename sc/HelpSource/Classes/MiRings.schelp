@@ -134,18 +134,6 @@ more:
 }.play
 )
 
-
-(  // some more vibrato
-{
-	var note = 48;
-	var input = Saw.ar(note.midicps, 0.1);
-	var trig = Dust.kr(0.3);
-	var pit = Latch.kr(PinkNoise.kr(3), trig);
-	var vib = SinOsc.kr(5, 0, LFNoise2.kr(0.2).clip(0,1));
-
-	MiRings.ar(input, trig, note+pit+vib, 0.2, 0.6, 0.9, intern_exciter: 1)
-}.play
-)
 ::
 
 Section:: Internal Exciter

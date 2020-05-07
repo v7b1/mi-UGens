@@ -38,9 +38,10 @@
 
 float rings::Dsp::sr = 48000.0;
 float rings::Dsp::a3 = 440.0 / 48000.0;
-int kBlockSize = 64;
+int kBlockSize = 32;
 int kMaxBlockSize = rings::kMaxBlockSize;
 
+// TODO: get rid of kMaxBlockSize, so we only have one: kBlockSize
 
 static InterfaceTable *ft;
 
@@ -54,10 +55,11 @@ struct MiRings : public Unit {
     rings::Patch            patch;
     
     uint16_t                *reverb_buffer;
+    float                   *silence;
+    float                   *input;
     
     bool                    prev_trig;
     int                     prev_poly;
-    //int                     bcount;
     
 };
 
@@ -71,23 +73,26 @@ static void MiRings_Ctor(MiRings *unit) {
     
     rings::Dsp::setSr(SAMPLERATE);
 
-    // TODO: fix changing block sizes - code works for 64 samples
-    //Print("sc block size: %d\n", BUFLENGTH);
     if(BUFLENGTH > kMaxBlockSize) {
         Print("MiRings ERROR: sc block size too big!\n");
+        unit = NULL;
         return;
     }
-    /*else if (BUFLENGTH < kBlockSize) {
+    else if (BUFLENGTH < kBlockSize) {
         Print("MiRings ERROR: sc block size too small!\n");
+        unit = NULL;
         return;
-    }*/
-    
-    kBlockSize = BUFLENGTH;
-        
+    }
     
     // allocate memory + init with zeros
     unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t));
     memset(unit->reverb_buffer, 0, 32768*sizeof(uint16_t));
+    
+    unit->silence = (float*)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
+    memset(unit->silence, 0, BUFLENGTH*sizeof(float));
+    
+    unit->input = (float*)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
+    memset(unit->input, 0, BUFLENGTH*sizeof(float));
     
     // zero out...
     memset(&unit->strummer, 0, sizeof(unit->strummer));
@@ -108,8 +113,6 @@ static void MiRings_Ctor(MiRings *unit) {
     unit->performance_state.fm = 0.f;       // TODO: fm not used, maybe later...
     unit->prev_trig = false;
     
-    //unit->bcount = 0;
-    
     
     // check input rates
     if(INRATE(0) == calc_FullRate)
@@ -127,8 +130,6 @@ static void MiRings_Ctor(MiRings *unit) {
     else
         unit->performance_state.internal_note = false;
 
-    // TODO: check out ClearUnitOutputs
-//    ClearUnitOutputs(unit, 1);
     
     SETCALC(MiRings_next);
     //MiRings_next(unit, 64);       // do we reallly need this?
@@ -166,22 +167,22 @@ void MiRings_next( MiRings *unit, int inNumSamples)
     float *out2 = OUT(1);
     
     rings::Patch *patch = &unit->patch;
-    float   input[BUFLENGTH];
-    size_t  size = inNumSamples; //kBlockSize; 
+    rings::PerformanceState *ps = &unit->performance_state;
+    float   *input = unit->input;
+    size_t  size = kBlockSize;
     
 
     // check input rates for excitation input
     if(INRATE(0) == calc_FullRate) {
-        // we have to copy input vector (why?)
-        std::copy(&in[0], &in[size], &input[0]);
+        std::copy(&in[0], &in[inNumSamples], &input[0]);
         // intern_exciter should be off, but user can override
-        unit->performance_state.internal_exciter = intern_exciter;
+        ps->internal_exciter = intern_exciter;
     }
     else {
         // if there's no audio input, set input to zero...
-        memset(input, 0, size*sizeof(float));
+        input = unit->silence;
         // ... and use internal exciter!
-        unit->performance_state.internal_exciter = true;
+        ps->internal_exciter = true;
     }
     
     // set resonator model
@@ -199,8 +200,8 @@ void MiRings_next( MiRings *unit, int inNumSamples)
     
     // set pitch
     CONSTRAIN(voct_in, 0.f, 114.f);
-    unit->performance_state.tonic = 12.f;
-    unit->performance_state.note = voct_in;
+    ps->tonic = 12.f;
+    ps->note = voct_in;
     
     
     // set params
@@ -221,7 +222,7 @@ void MiRings_next( MiRings *unit, int inNumSamples)
 
     
     // check trigger input
-    if(!unit->performance_state.internal_strum) {
+    if(!ps->internal_strum) {
         
         bool trig = false;
         bool prev_trig = unit->prev_trig;
@@ -239,9 +240,9 @@ void MiRings_next( MiRings *unit, int inNumSamples)
         
         if(trig) {
             if(!prev_trig)
-                unit->performance_state.strum = true;
+                ps->strum = true;
             else
-                unit->performance_state.strum = false;
+                ps->strum = false;
         }
         unit->prev_trig = trig;
         
@@ -249,13 +250,18 @@ void MiRings_next( MiRings *unit, int inNumSamples)
 
     unit->part.set_bypass(bypass);
     
-    if(easter_egg) {
-        unit->strummer.Process(NULL, size, &unit->performance_state);
-        unit->string_synth.Process(unit->performance_state, unit->patch, input, out1, out2, size);
-    } else {
-        unit->strummer.Process(input, size, &unit->performance_state);
-        unit->part.Process(unit->performance_state, unit->patch, input, out1, out2, size);
+    for(int count=0; count<inNumSamples; count+=size) {
+        if(easter_egg) {
+            unit->strummer.Process(NULL, size, ps);
+            unit->string_synth.Process(*ps, *patch,
+                                       input+count, out1+count, out2+count, size);
+        } else {
+            unit->strummer.Process(input+count, size, ps);
+            unit->part.Process(*ps, *patch,
+                               input+count, out1+count, out2+count, size);
+        }
     }
+    
     
 }
 

@@ -500,6 +500,9 @@ void Part::Process(
   
   note_[active_voice_] = note_filter_.note();
   
+    // vb, we should be able to do this a little later, but we can't
+    // at the moment, don't see why, though.
+    // polyphony stops working...
   fill(&out[0], &out[size], 0.0f);
   fill(&aux[0], &aux[size], 0.0f);
   for (int32_t voice = 0; voice < polyphony_; ++voice) {
@@ -523,6 +526,10 @@ void Part::Process(
     } else {
       fill(&resonator_input_[0], &resonator_input_[size], 0.0f);
     }
+      // vb: would be nice to postpone zeroing out to here
+      // so we can spare having to copy the input.
+//      fill(&out[0], &out[size], 0.0f);
+//      fill(&aux[0], &aux[size], 0.0f);
     
     if (model_ == RESONATOR_MODEL_MODAL) {
       RenderModalVoice(
