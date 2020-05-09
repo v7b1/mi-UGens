@@ -133,9 +133,9 @@ add_library(MiPlaits MODULE
         ${BUILD_SOURCES}
 )
 
+if(APPLE)
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
 
-if(APPLE)
 target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Accelerate")
 endif()

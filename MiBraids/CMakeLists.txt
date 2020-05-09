@@ -47,6 +47,7 @@ set(MI_SOURCES
 	${MI_PATH}/quantizer_scales.h
 	${MI_PATH}/resources.cc
 	${MI_PATH}/resources.h
+	${MI_PATH}/settings.h
 	${MI_PATH}/signature_waveshaper.h
 	${MI_PATH}/vco_jitter_source.h
 )
@@ -70,10 +71,11 @@ add_library(MiBraids MODULE
         ${BUILD_SOURCES}
 )
 
+
+if(APPLE)
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
 
-if(APPLE)
 target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Accelerate")
 endif()
 

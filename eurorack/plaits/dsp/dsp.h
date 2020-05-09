@@ -50,7 +50,7 @@ namespace plaits {
 //static const float kCorrectedSampleRate = 47872.34f;
 //const float a0 = (440.0f / 8.0f) / kCorrectedSampleRate;
 
-    const size_t kMaxBlockSize = 256;   //24;
+    const size_t kMaxBlockSize = 32;   //24;  //256
     const size_t kBlockSize = 16;   //(was 12);
 
 }  // namespace plaits

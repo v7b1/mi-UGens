@@ -33,8 +33,9 @@
 #include "plaits/dsp/voice.h"
 
 
-float kSampleRate = 48000.0;
+float kSampleRate = 48000.0f;
 float a0 = (440.0f / 8.0f) / kSampleRate;
+const size_t   kBlockSize = plaits::kBlockSize;
 
 static InterfaceTable *ft;
 
@@ -65,6 +66,12 @@ static void MiPlaits_next(MiPlaits *unit, int inNumSamples);
 
 static void MiPlaits_Ctor(MiPlaits *unit) {
     
+    if (BUFLENGTH < kBlockSize) {
+        Print("MiPlaits ERROR: block size can't be smaller than %d samples!\n", kBlockSize);
+        unit = NULL;
+        return;
+    }
+    
     kSampleRate = SAMPLERATE;
     a0 = (440.0f / 8.0f) / kSampleRate;
 
@@ -81,7 +88,7 @@ static void MiPlaits_Ctor(MiPlaits *unit) {
     memset(unit->shared_buffer, 0, 32768);
 
     if(unit->shared_buffer == NULL) {
-        Print("mem alloc failed!");
+        Print("MiPlaits ERROR: mem alloc failed!");
         unit = NULL;
     }
     stmlib::BufferAllocator allocator(unit->shared_buffer, 32768);
@@ -139,8 +146,6 @@ void MiPlaits_next( MiPlaits *unit, int inNumSamples)
     float *out = OUT(0);
     float *aux = OUT(1);
 
-    size_t     size = plaits::kBlockSize;
-    uint8_t    count = 0;
     
     // TODO: check setting pitch
     float pitch = fabs(voct);
@@ -183,7 +188,7 @@ void MiPlaits_next( MiPlaits *unit, int inNumSamples)
         
         if (INRATE(5) == calc_FullRate) {
                         // trigger input is audio rate
-            // TODO: add vDSP vector summation
+            // TODO: add vDSP vector summation 
             for(int i=0; i<inNumSamples; ++i)
                 sum += trig_in[i];
         }
@@ -205,9 +210,9 @@ void MiPlaits_next( MiPlaits *unit, int inNumSamples)
         unit->modulations.level_patched = false;
     
     
-    for(count = 0; count < inNumSamples; count += size) {
+    for(int count = 0; count < inNumSamples; count += kBlockSize) {
         
-        unit->voice_->Render(unit->patch, unit->modulations, out+count, aux+count, size);
+        unit->voice_->Render(unit->patch, unit->modulations, out+count, aux+count, kBlockSize);
 
     }
     

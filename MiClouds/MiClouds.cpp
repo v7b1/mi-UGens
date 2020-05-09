@@ -99,6 +99,12 @@ static void MiClouds_next(MiClouds *unit, int inNumSamples);
 
 static void MiClouds_Ctor(MiClouds *unit) {
     
+    if(BUFLENGTH < kAudioBlockSize) {
+        Print("MiClouds ERROR: Block Size can't be smaller than %d samples\n", kAudioBlockSize);
+        unit = NULL;
+        return;
+    }
+    
     int largeBufSize = 118784;
     int smallBufSize = 65536-128;
     
@@ -110,7 +116,6 @@ static void MiClouds_Ctor(MiClouds *unit) {
     if(unit->large_buffer == NULL || unit->small_buffer == NULL) {
         Print( "mem alloc failed!" );
         unit = NULL;
-        ClearUnitOutputs(unit, BUFLENGTH); // ??
         return;
     }
     
@@ -167,29 +172,6 @@ static void MiClouds_Dtor(MiClouds *unit) {
     }
     if(unit->processor) delete unit->processor;
 }
-
-
-
-void unit_info(MiClouds *unit) {
-    clouds::Parameters *p = unit->processor->mutable_parameters();
-    Print( "position: %f\n", p->position);
-    Print( "size: %f\n", p->size);
-    Print( "pitch: %f\n", p->pitch);
-    Print( "density: %f\n", p->density);
-    Print( "texture: %f\n", p->texture);
-    Print( "drywet: %f\n", p->dry_wet);
-    Print( "spread: %f\n", p->stereo_spread);
-    Print( "reverb: %f\n", p->reverb);
-    Print( "feedback: %f\n", p->feedback);
-    
-    Print( "freeze: %d\n", p->freeze);
-    Print( "trigger: %d\n", p->trigger);
-    Print( "gate: %d\n", p->gate);
-    Print( "in_gain: %f\n", unit->in_gain);
-    Print( "coef: %f\n", unit->coef);
-    Print( "---------------------\n");
-}
-
 
 
 

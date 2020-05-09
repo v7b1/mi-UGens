@@ -76,5 +76,7 @@ add_library(
     ${BUILD_SOURCES}
 )
 
+if(APPLE)
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
+endif()

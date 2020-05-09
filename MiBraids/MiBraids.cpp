@@ -29,6 +29,7 @@
 
 
 // TODO: look into 'auto_trigger' and internal env
+// TODO: add quantizer
 
 
 #include "SC_PlugIn.h"
@@ -51,7 +52,7 @@
 
 
 #define     MI_SAMPLERATE       96000.f
-#define     BLOCK_SIZE          32
+#define     BLOCK_SIZE          32      // --> macro_oscillator.h !
 #define     SAMP_SCALE          (float)(1.0 / 32756.0)
 
 
@@ -113,8 +114,7 @@ static void MiBraids_Ctor(MiBraids *unit) {
     //Print("sr ratio: %f\n", unit->ratio);
     
     if (BUFLENGTH < BLOCK_SIZE) {
-        Print("MiBraids error: block size can't be smaller than 32 samples!\n");
-        ClearUnitOutputs(unit, BUFLENGTH); // ??
+        Print("MiBraids error: block size can't be smaller than %d samples!\n", BLOCK_SIZE);
         unit = NULL;
         return;
     }
@@ -152,7 +152,7 @@ static void MiBraids_Ctor(MiBraids *unit) {
     
     if((unit->src_state = src_callback_new(src_input_callback, converter, 1, &error, &unit->pd)) == NULL)
     {
-        Print("\n\n MiBraids error: src_new() failed : %s.\n\n", src_strerror (error)) ;
+        Print("\n\n MiBraids ERROR: src_new() failed : %s.\n\n", src_strerror (error)) ;
         unit = NULL;
         return;
     }
@@ -268,7 +268,7 @@ void MiBraids_next( MiBraids *unit, int inNumSamples)
         // render
         osc->Render(sync_buffer, buffer, size);
         
-        for (auto i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i) {
             out[count + i] = buffer[i] * SAMP_SCALE;
         }
     }
@@ -440,7 +440,7 @@ void MiBraids_next_reduc( MiBraids *unit, int inNumSamples)
         // render
         osc->Render(sync_buffer, buffer, BLOCK_SIZE);
         
-        for (auto i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i) {
             
             if((i % decimation_factor) == 0) {
                 sample = buffer[i] & bit_mask;

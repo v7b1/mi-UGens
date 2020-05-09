@@ -99,7 +99,7 @@ class MacroOscillator {
   int16_t parameter_[2];
   int16_t previous_parameter_[2];
   int16_t pitch_;
-  uint8_t sync_buffer_[32];     // vb, 24
+  uint8_t sync_buffer_[32];     // vb, 24   must be at least BLOCK_SIZE!
   int16_t temp_buffer_[32];     // vb, 24
   int32_t lp_state_;
   

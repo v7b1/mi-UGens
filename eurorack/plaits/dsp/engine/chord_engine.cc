@@ -37,6 +37,7 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
+    // TODO: add more chords! vb
 const float chords[kChordNumChords][kChordNumNotes] = {
   { 0.00f, 0.01f, 11.99f, 12.00f },  // OCT
   { 0.00f, 7.01f,  7.00f, 12.00f },  // 5
@@ -65,9 +66,14 @@ void ChordEngine::Init(BufferAllocator* allocator) {
 
 void ChordEngine::Reset() {
   for (int i = 0; i < kChordNumChords; ++i) {
-    for (int j = 0; j < kChordNumVoices; ++j) {
-      ratios_[i * kChordNumVoices + j] = SemitonesToRatio(chords[i][j]);
-    }
+      // vb, this seems to be an oversight:
+//    for (int j = 0; j < kChordNumVoices; ++j) {
+//      ratios_[i * kChordNumVoices + j] = SemitonesToRatio(chords[i][j]);
+//    }
+      // should probably be:
+      for (int j = 0; j < kChordNumNotes; ++j) {   
+          ratios_[i * kChordNumVoices + j] = SemitonesToRatio(chords[i][j]);
+      }
   }
 }
 

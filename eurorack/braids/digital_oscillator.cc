@@ -1363,7 +1363,7 @@ void DigitalOscillator::RenderBlown(
   state_.phy.lp_state = lp_state;
 }
 
-static const uint16_t kRandomPressure = 0.22 * 4096;
+//static const uint16_t kRandomPressure = 0.22 * 4096;
 static const uint16_t kDCBlockingPole = 0.99 * 4096;
 
 void DigitalOscillator::RenderFluted(

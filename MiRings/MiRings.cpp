@@ -36,9 +36,9 @@
 #include "rings/dsp/dsp.h"
 
 
-float rings::Dsp::sr = 48000.0;
-float rings::Dsp::a3 = 440.0 / 48000.0;
-int kBlockSize = rings::kMaxBlockSize;
+float rings::Dsp::sr = 48000.0f;
+float rings::Dsp::a3 = 440.0f / 48000.0f;
+const size_t kBlockSize = rings::kMaxBlockSize;
 
 static InterfaceTable *ft;
 
@@ -242,12 +242,18 @@ void MiRings_next( MiRings *unit, int inNumSamples)
 
     unit->part.set_bypass(bypass);
     
-    for(int count=0; count<inNumSamples; count+=size) {
-        if(easter_egg) {
+    
+    if(easter_egg) {
+        for(int count=0; count<inNumSamples; count+=size) {
+            
             unit->strummer.Process(NULL, size, ps);
             unit->string_synth.Process(*ps, *patch,
-                                       input+count, out1+count, out2+count, size);
-        } else {
+                                   input+count, out1+count, out2+count, size);
+        }
+    }
+    else {
+        for(int count=0; count<inNumSamples; count+=size) {
+            
             unit->strummer.Process(input+count, size, ps);
             unit->part.Process(*ps, *patch,
                                input+count, out1+count, out2+count, size);

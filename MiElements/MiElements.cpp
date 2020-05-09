@@ -28,7 +28,7 @@
  */
 
 
-// TODO: easteregg, FM
+// TODO: FM
 
 
 #include "SC_PlugIn.h"
@@ -37,7 +37,7 @@
 #include "elements/dsp/part.h"
 
 
-float elements::Dsp::kSampleRate = 32000.0f; //44100.0f; //48000.0f;
+float elements::Dsp::kSampleRate = 32000.0f; 
 float elements::Dsp::kSrFactor = 32000.0f / kSampleRate;
 float elements::Dsp::kIntervalCorrection = logf(kSrFactor)/logf(2.0f)*12.0f;
 
@@ -72,6 +72,11 @@ static void MiElements_next(MiElements *unit, int inNumSamples);
 
 static void MiElements_Ctor(MiElements *unit) {
     
+    if(BUFLENGTH < elements::kMaxBlockSize) {
+        Print("MiElements ERROR: Block Size can't be smaller than %d samples\n", elements::kMaxBlockSize);
+        unit = NULL;
+        return;
+    }
     
     elements::Dsp::setSr(SAMPLERATE);
     
@@ -80,9 +85,8 @@ static void MiElements_Ctor(MiElements *unit) {
     unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t)); // 65536
     
     if(unit->reverb_buffer == NULL) {
-        Print("mem alloc failed!");
+        Print("MiElements ERROR: mem alloc failed!\n");
         unit = NULL;
-        ClearUnitOutputs(unit, BUFLENGTH); // ??
         return;
     }
     
@@ -100,7 +104,7 @@ static void MiElements_Ctor(MiElements *unit) {
     uint32_t mySeed = 0x1fff7a10;
     unit->part->Seed(&mySeed, 3);
     
-    unit->part->set_easter_egg(false);          // TODO: add easteregg option
+    unit->part->set_easter_egg(false);   
     unit->p = unit->part->mutable_patch();
     
     unit->blockCount = 0;
@@ -274,20 +278,32 @@ void MiElements_next( MiElements *unit, int inNumSamples)
     
     
     
-    int kend = inNumSamples / size;
+//    int kend = inNumSamples / size;
     
-    for(size_t k = 0; k < kend; ++k) {
-        int offset = k * size;
-        
-        unit->part->Process(ps, blow_in+offset, strike_in+offset, out, aux, size);
+    for(size_t count = 0; count < inNumSamples; count += size) {
+
+        unit->part->Process(ps, blow_in+count, strike_in+count, out, aux, size);
         
         for (size_t i = 0; i < size; ++i) {
-            int index = i + offset;
+            int index = i + count;
             outL[index] = stmlib::SoftLimit(out[i]*0.5);
             outR[index] = stmlib::SoftLimit(aux[i]*0.5);
         }
         
     }
+    
+//    for(size_t k = 0; k < kend; ++k) {
+//        int offset = k * size;
+//
+//        unit->part->Process(ps, blow_in+offset, strike_in+offset, out, aux, size);
+//
+//        for (size_t i = 0; i < size; ++i) {
+//            int index = i + offset;
+//            outL[index] = stmlib::SoftLimit(out[i]*0.5);
+//            outR[index] = stmlib::SoftLimit(aux[i]*0.5);
+//        }
+//
+//    }
     
 }
 
