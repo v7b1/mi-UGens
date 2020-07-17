@@ -1,0 +1,117 @@
+TITLE:: MiOmi
+summary:: FM Synth-Voice based on 'ominous'
+categories:: UGens>Osc
+related:: Classes/MiElements, Classes/MiPlaits, Classes/MiBraids
+
+DESCRIPTION::
+MiOmi is a FM Synth-Voice with integrated multi-mode filter. It's based on 'ominous', "a dark 2x2-op FM synth", which hides as 'easteregg' in the Elements eurorack module. It is mildly optimized, skips oversampling and reverb found in the original and has a few extensions.
+
+note::
+MiOmi is based on code found in mutable instruments' Elements eurorack module: link::https://mutable-instruments.net/modules/elements/::. Original code by Émilie Gillet::
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: audio_in
+External modulation signal input.
+
+ARGUMENT:: gate
+Gate input. A transition from non-positive to positive triggers the internal amplitude and filter envelope.
+
+ARGUMENT:: pit
+MIDI-pitch
+
+ARGUMENT:: contour
+Envelope contour (0. -- 1.), ranging from various AD to ADSR curves.
+
+ARGUMENT:: detune
+Detuning value (0. -- 1.) of second oscillator
+
+ARGUMENT:: level1
+Level of first oscillator (0. -- 1.)
+
+ARGUMENT:: level2
+Level of second oscillator (0. -- 1.)
+
+ARGUMENT:: ratio1
+Carrier/modulator ratio of first oscillator (0. -- 1.)
+
+ARGUMENT:: ratio2
+Carrier/modulator ratio of second oscillator (0. -- 1.)
+
+ARGUMENT:: fm1
+Modulation amount of first oscillator (0. -- 1.)
+
+ARGUMENT:: fm2
+Modulation amount of second oscillator (0. -- 1.)
+
+ARGUMENT:: fb
+Feedback modulation amount of both oscillators (0. -- 1.)
+
+ARGUMENT:: xfb
+Cross feedback amount (0. -- 1.)
+
+ARGUMENT:: filter_mode
+Multi-mode filter, going from LP , HP to BP (0. -- 1.)
+
+ARGUMENT:: cutoff
+Cutoff frequency of the filter unit (0. -- 1.)
+
+ARGUMENT:: reson
+Filter resonance (0. -- 1.)
+
+ARGUMENT:: strength
+Offset for amlitude and filter envelopes (0. -- 1.)
+
+ARGUMENT:: env
+Envelope amount for filter (0. -- 1.)
+
+ARGUMENT:: rotate
+Rotation speed of stereo image (0. -- 1.)
+
+ARGUMENT:: space
+Width of stereo image (0. -- 1.)
+
+
+returns:: left and right audio channel
+
+
+EXAMPLES::
+
+code::
+
+(    // basic
+{ MiOmi.ar(pit: 50, level1:1, level2:0.5, ratio1:0.49, fm1:0.5) }.play
+)
+
+
+(   // external FM
+{
+	var fmfreq = MouseX.kr(2, 1000);
+	var fmamp = MouseY.kr(0, 1);
+	var extFM = SinOsc.ar(fmfreq,0,fmamp);
+	MiOmi.ar(extFM, pit: 40, fm1: 0.5, fm2: 0.5, xfb: 0.1, cutoff: 0.9)}.play
+)
+
+
+(   // filter and cutoff modulation
+{
+	var filtmod = LFTri.kr(0.23).range(0,1);
+	var gate = LFPulse.kr(6,0,0.2);
+	var cf = LFTri.kr(0.2).range(0,0.5);
+	MiOmi.ar(0, gate, pit: 48, contour: 0.1, fm1: 0.5, fm2: 0.5, fb:0.5, strength: 0,
+		filter_mode: filtmod, cutoff: cf, env: 0.5)
+}.play
+)
+
+
+(   // cross feedback
+{
+	var xfb = LFTri.kr(0.2).range(0,1);
+	MiOmi.ar(pit: 43, xfb: xfb)
+}.play
+)
+
+::
