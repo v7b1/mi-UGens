@@ -82,7 +82,7 @@ static void MiElements_Ctor(MiElements *unit) {
     
     
     // allocate memory
-    unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t)); // 65536
+    unit->reverb_buffer = (uint16_t*)RTAlloc(unit->mWorld, 32768*sizeof(uint16_t));
     
     if(unit->reverb_buffer == NULL) {
         Print("MiElements ERROR: mem alloc failed!\n");
@@ -90,8 +90,8 @@ static void MiElements_Ctor(MiElements *unit) {
         return;
     }
     
-    unit->out = (float *)RTAlloc(unit->mWorld, 1024*sizeof(float));
-    unit->aux = (float *)RTAlloc(unit->mWorld, 1024*sizeof(float));
+    unit->out = (float *)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
+    unit->aux = (float *)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
     
     unit->silence = (float *)RTAlloc(unit->mWorld, BUFLENGTH*sizeof(float));
     memset(unit->silence, 0, BUFLENGTH*sizeof(float));
@@ -150,6 +150,25 @@ static void MiElements_Dtor(MiElements *unit) {
         RTFree(unit->mWorld, unit->aux);
 }
 
+
+inline void SoftLimit_block(MiElements *unit, float *inout, size_t size)
+{
+    while(size--) {
+        float x = *inout * 0.5f;
+        float x2 = x * x;
+        *inout = x * (27.f + x2) / (27.f + 9.f * x2);
+        inout++;
+    }
+}
+
+inline void SoftLimit_block2(MiElements *unit, float *in, float *out, size_t size)
+{
+    while(size--) {
+        float x = *in++ * 0.5f;
+        float x2 = x * x;
+        *out++ = x * (27.f + x2) / (27.f + 9.f * x2);
+    }
+}
 
 #pragma mark ----- dsp loop -----
 
@@ -277,33 +296,15 @@ void MiElements_next( MiElements *unit, int inNumSamples)
         strike_in = unit->silence;
     
     
-    
-//    int kend = inNumSamples / size;
+    // input and output can't be the same arrays
     
     for(size_t count = 0; count < inNumSamples; count += size) {
-
-        unit->part->Process(ps, blow_in+count, strike_in+count, out, aux, size);
         
-        for (size_t i = 0; i < size; ++i) {
-            int index = i + count;
-            outL[index] = stmlib::SoftLimit(out[i]*0.5);
-            outR[index] = stmlib::SoftLimit(aux[i]*0.5);
-        }
-        
+        unit->part->Process(ps, blow_in+count, strike_in+count, out+count, aux+count, size);
     }
     
-//    for(size_t k = 0; k < kend; ++k) {
-//        int offset = k * size;
-//
-//        unit->part->Process(ps, blow_in+offset, strike_in+offset, out, aux, size);
-//
-//        for (size_t i = 0; i < size; ++i) {
-//            int index = i + offset;
-//            outL[index] = stmlib::SoftLimit(out[i]*0.5);
-//            outR[index] = stmlib::SoftLimit(aux[i]*0.5);
-//        }
-//
-//    }
+    SoftLimit_block2(unit, out, outL, inNumSamples);
+    SoftLimit_block2(unit, aux, outR, inNumSamples);
     
 }
 
