@@ -1,0 +1,57 @@
+TITLE:: MiRipples
+summary:: Classic resonant LP filter
+categories:: UGens>Filter
+related:: Classes/Resonz, etc.
+​
+DESCRIPTION::
+MiRipples is a clone of mutable instruments' 'Ripples' module link::https://mutable-instruments.net/modules/ripples/:: - a classic, 'big-sounding' analog four-pole filter. The code is based on the virtual analog model provided by Alright Devices link::https://www.alrightdevices.com/:: which was done for VCVrack link::https://vcvrack.com/::.
+​
+Note:: This UGen (still) uses a lot of CPU power...::
+​
+CLASSMETHODS::
+​
+METHOD:: ar
+​
+ARGUMENT:: in
+Audio Input
+​
+ARGUMENT:: cf
+Cutoff frequency (0 -- 1)
+​
+ARGUMENT:: reson
+Resonance (0 -- 1)
+​
+ARGUMENT:: drive
+Overdrive (1 == no distortion)
+​
+​
+returns:: (describe returnvalue here)
+​
+​
+EXAMPLES::
+​
+code::
+
+// basic
+{ MiRipples.ar(Saw.ar(60), 0.4, 0.3) }.play
+
+
+(
+{
+	var cf = LFNoise0.kr(4).range(0, 1);
+	var out = MiRipples.ar(Saw.ar(60), cf, 0.6, mul: 0.5);
+	out!2;
+}.play
+)
+
+
+(   // filter sweep + distortion
+{
+	var cf = LFTri.kr(0.03).range(0.1,0.9);
+	var out = MiRipples.ar(Saw.ar(40), cf, 0.8, 4, 0.2);
+	out!2;
+}.play
+)
+
+::
+​
