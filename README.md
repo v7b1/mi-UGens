@@ -33,6 +33,17 @@ and then:
 
 
 
+or use the included `mac-build.sh` script to build all projects at once. It takes the path to SuperCollider source code as its first argument
+
+```bash
+cd mi-UGens
+./mac-build.sh PATH/TO/SC/SOURCE/CODE
+```
+
+Then step inside the newly created build folder and copy the Mi-UGens folder to your SuperCollider extensions.
+
+
+
 For compiled mac versions see https://vboehm.net/downloads
 
 
@@ -50,3 +61,6 @@ cd mi-UGens
 ./linux-build.sh PATH/TO/SC/SOURCE/CODE
 ```
 
+
+
+Collect the UGen files from the build folders of the projects and put them together with the sc folder into your SC extensions folder.
