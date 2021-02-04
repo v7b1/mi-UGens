@@ -58,3 +58,5 @@ From Supercollider execute:
 ```
 Quarks.install("https://github.com/v7b1/mi-UGens")
 ```
+
+Then recompile the supercollider class library
