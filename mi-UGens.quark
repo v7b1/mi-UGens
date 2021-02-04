@@ -1,0 +1,6 @@
+(
+	\name: 			"mi-UGens",
+	\summary:		"Mutable instruments UGen porting",
+	\author: 		"Volker Böhm",
+	\since: 		"2020"
+)
