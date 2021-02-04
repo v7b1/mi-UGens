@@ -7,31 +7,27 @@ https://github.com/pichenettes/eurorack
 
 **Please note, this is NOT a project by [mutable instruments](https://mutable-instruments.net/) !**
 
-
-
 Volker Böhm, 2020
 https://vboehm.net
 
+## Installation
 
+### Build libraries
 
-## Building for mac
+Clone the repository and its submodules
+```bash
+git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git
+```
 
-- clone the repository and its submodules
-
-   `git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
-
+#### Mac OS X
 - cd into the directory of the project you want to build
-
-- mkdir build
-
-- cd build
+- `mkdir build`
+- `cd build`
 
 and then:
 
-- cmake -DSC_PATH="path/to/sc-src" -DCMAKE_BUILD_TYPE=RELEASE ..
-- make
-
-
+- `cmake -DSC_PATH="path/to/sc-src" -DCMAKE_BUILD_TYPE=RELEASE ..`
+- `make`
 
 or use the included `mac-build.sh` script to build all projects at once. It takes the path to SuperCollider source code as its first argument
 
@@ -42,17 +38,9 @@ cd mi-UGens
 
 Then step inside the newly created build folder and copy the Mi-UGens folder to your SuperCollider extensions.
 
-
-
 For compiled mac versions see https://vboehm.net/downloads
 
-
-
-## Building for linux
-
-Clone the repository and its submodules
-
-`git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
+#### Linux
 
 Use the included `linux-build.sh` script to build for linux. It takes the SuperCollider source code as its first argument.
 
@@ -62,5 +50,11 @@ cd mi-UGens
 ```
 
 
+Collect the UGen files from the build folders of the projects and put them into your SC extensions folder.
 
-Collect the UGen files from the build folders of the projects and put them together with the sc folder into your SC extensions folder.
+### Install Quark
+
+From Supercollider execute:
+```
+Quarks.install("https://github.com/v7b1/mi-UGens")
+```
