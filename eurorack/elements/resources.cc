@@ -172,10 +172,6 @@ const int16_t* lookup_table_int16_table[] = {
 };
 
 
-
-const uint32_t* lookup_table_uint32_table[] = {
-};
-
 const float lut_sine[] = {
    0.000000000e+00,  1.533980186e-03,  3.067956763e-03,  4.601926120e-03,
    6.135884649e-03,  7.669828740e-03,  9.203754782e-03,  1.073765917e-02,
