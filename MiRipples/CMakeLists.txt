@@ -9,6 +9,10 @@ set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../mutableSources32")
 set(VCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack")
 set(VCV_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack/include")
 
+if(MSVC)
+    add_definitions(-D_USE_MATH_DEFINES) # defines M_PI with MSVC
+endif()
+
 set(VCV_SOURCES 
 	${VCV_PATH}/Ripples/aafilter.hpp
 	${VCV_PATH}/Ripples/ripples.hpp
