@@ -67,8 +67,6 @@ Collect the UGen files from the build folders of the projects and put them toget
 
 ### Building for windows
 
-On Windows, the MiBraids UGen is not yet supported. It depends on libsamplerate, which is difficult to compile on Windows.
-
 Clone the repository and its submodules:
 
 `git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
