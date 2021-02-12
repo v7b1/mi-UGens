@@ -5,10 +5,17 @@
 set -euo pipefail
 
 SC_SRC=$1
-FOLDERS=(MiClouds MiElements MiMu MiOmi MiPlaits MiRings MiRipples MiTides MiVerb MiWarps)
-# FIXME MiBraids currently unsupported because building libsamplerate is hard on Windows
+FOLDERS=(MiBraids MiClouds MiElements MiMu MiOmi MiPlaits MiRings MiRipples MiTides MiVerb MiWarps)
 
-mkdir build_artifacts
+mkdir -p build_artifacts
+
+echo "Building libsamplerate"
+cd MiBraids/libsamplerate
+mkdir -p build
+cd build
+cmake ..
+cmake --build . --config Release
+cd ../../..
 
 for FOLDER in "${FOLDERS[@]}"
 do
@@ -17,7 +24,7 @@ do
 	echo "Building $FOLDER"
 
 	# # Build folder
-	mkdir build 
+	mkdir -p build
 	cd build
 
 	# # Build
