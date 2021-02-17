@@ -745,12 +745,12 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
             }
         }
         
-        // TODO: vb, do we really need to clip outputs?
+        // vb, remove hard clipping of outputs
         while (size--) {
             float main = *main_output;
             float aux = *aux_output * 0.5;
-            CONSTRAIN(main, -1.0f, 1.0f);
-            CONSTRAIN(aux, -1.0f, 1.0f);
+//            CONSTRAIN(main, -1.0f, 1.0f);
+//            CONSTRAIN(aux, -1.0f, 1.0f);
             output->l = main;
             output->r = aux;
             ++main_output;
