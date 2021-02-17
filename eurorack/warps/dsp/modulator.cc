@@ -614,8 +614,6 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
         float vocoder_amount = (parameters_.modulation_algorithm - 0.7f) * 20.0f + 0.5f;
         CONSTRAIN(vocoder_amount, 0.0f, 1.0f);
     
-        //std::cout << "carrier: " << parameters_.carrier_shape << "\n";
-        //std::cout << "vocoder_amount: " << vocoder_amount << "\n";
         
         if (!parameters_.carrier_shape) {
             fill(&aux_output[0], &aux_output[size], 0.0f);
@@ -623,7 +621,8 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
     
         // apply VCA/saturation (5.8% per channel)
         float* input_samples = &input->l;
-        for (int32_t i = parameters_.carrier_shape ? 1 : 0; i < 2; ++i) {
+//        for (int32_t i = parameters_.carrier_shape ? 1 : 0; i < 2; ++i) {
+        for (int32_t i = 0; i < 2; ++i) {       // vb, always apply VCA to both inputs
             // TODO: look at this, can we get rid of noise gate stuff?
             amplifier_[i].Processf(
                                   parameters_.channel_drive[i],
@@ -639,7 +638,10 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
         if (parameters_.carrier_shape) {
             // Scale phase-modulation input.
             for (size_t i = 0; i < size; ++i) {
-                internal_modulation_[i] = input[i].l;
+//                internal_modulation_[i] = input[i].l;
+                // vb, we want level1 to control amp of ext. carrier input when doing PM with int.osc
+                // so, take input AFTER vca/saturation not before
+                internal_modulation_[i] = carrier[i];
             }
 
             // Xmod: sine, triangle saw.
@@ -668,7 +670,7 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
                                                                 internal_modulation_,
                                                                 aux_output,
                                                                 size);
-                //std::cout << "carrier_gain " << carrier_gain << "\n";
+
                 for (size_t i = 0; i < size; ++i) {
                     carrier[i] = aux_output[i] * carrier_gain;
                 }

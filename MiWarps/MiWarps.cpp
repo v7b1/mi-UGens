@@ -119,7 +119,7 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     float   algorithm = IN0(4);
     float   timbre = IN0(5);
     short   osc_shape = IN0(6);
-    float   pitch = IN0(7);
+    float   freq = IN0(7);
     //bool    easter_egg = (IN0(8) > 0.f);
     //bool    bypass = (IN0(11) > 0.f);
     
@@ -152,8 +152,8 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     p->carrier_shape = osc_shape;
 //    unit->settings->mutable_state()->carrier_shape = osc_shape;  
     
-    CONSTRAIN(pitch, 0.f, 127.f);
-    p->note = pitch;
+    CONSTRAIN(freq, 0.f, 15000.f);
+    p->note = freq;
     
     
     //unit->modulator->set_bypass(true);
