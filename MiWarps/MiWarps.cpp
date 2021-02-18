@@ -120,7 +120,8 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     float   timbre = IN0(5);
     short   osc_shape = IN0(6);
     float   freq = IN0(7);
-    //bool    easter_egg = (IN0(8) > 0.f);
+    float   pre_gain = IN0(8);
+    bool    easter_egg = (IN0(9) > 0.f);
     //bool    bypass = (IN0(11) > 0.f);
     
     float   *out = OUT(0);
@@ -152,9 +153,13 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     p->carrier_shape = osc_shape;
 //    unit->settings->mutable_state()->carrier_shape = osc_shape;  
     
-    CONSTRAIN(freq, 0.f, 15000.f);
+    CONSTRAIN(freq, 0.0f, 15000.0f);
     p->note = freq;
     
+    
+    CONSTRAIN(pre_gain, 1.0f, 10.0f);
+    p->limiter_pre_gain = pre_gain;
+//    unit->modulator->vocoder_.set_limiter_pre_gain(pre_gain);
     
     //unit->modulator->set_bypass(true);
     

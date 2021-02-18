@@ -65,6 +65,7 @@ struct Parameters {
   float note;
 
   int32_t carrier_shape;  // 0 = external
+    float limiter_pre_gain;     // vb
   
   // Apply a non-linear response to the parameter of all algorithms between
   // 1 and 4.

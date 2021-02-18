@@ -730,6 +730,7 @@ void Modulator::Processf(FloatFrame* input, FloatFrame* output, size_t size) {
             
             vocoder_.set_release_time(release_time * (2.0f - release_time));
             vocoder_.set_formant_shift(parameters_.modulation_parameter);
+            vocoder_.set_limiter_pre_gain(parameters_.limiter_pre_gain);  // vb
             vocoder_.Process(modulator, carrier, main_output, size);
         }
         

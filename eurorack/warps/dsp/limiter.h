@@ -53,7 +53,7 @@ class Limiter {
       size_t size) {
     while (size--) {
       float s = *in_out * pre_gain;
-      SLOPE(peak_, fabs(s), 0.05f, 0.00002f);
+      SLOPE(peak_, fabs(s), 0.05f, 0.001f); // vb, release was: 0.00002f
       float gain = (peak_ <= 1.0f ? 1.0f : 1.0f / peak_);
       *in_out++ = stmlib::SoftLimit(s * gain * 0.8f);
     }

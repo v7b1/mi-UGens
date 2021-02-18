@@ -55,6 +55,8 @@ void Vocoder::Init(float sample_rate) {
   for (int32_t i = 0; i < kNumBands; ++i) {
     follower_[i].Init();
   }
+    
+    limiter_pre_gain_ = 1.4f;       // vb
 }
 
 void Vocoder::Process(
@@ -124,7 +126,8 @@ void Vocoder::Process(
   }
 
   carrier_filter_bank_.Synthesize(out, size);
-  limiter_.Process(out, 1.4f, size);
+//  limiter_.Process(out, 1.4f, size);
+    limiter_.Process(out, limiter_pre_gain_, size);     // vb, spice up the limiter a little
 }
 
 }  // namespace warps

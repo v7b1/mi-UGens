@@ -249,6 +249,8 @@ class Modulator {
 
   inline bool easter_egg() const { return easter_egg_; }
   inline void set_easter_egg(bool easter_egg) { easter_egg_ = easter_egg; }
+    
+//    Vocoder vocoder_;   // vb
   
  private:
   template<XmodAlgorithm algorithm_1, XmodAlgorithm algorithm_2>
