@@ -116,7 +116,7 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     
     float   level1 = IN0(2);
     float   level2 = IN0(3);
-    float   algorithm = IN0(4);
+    float   algorithm = IN0(4) * 0.125f;
     float   timbre = IN0(5);
     short   osc_shape = IN0(6);
     float   freq = IN0(7);
@@ -134,10 +134,10 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     warps::Parameters *p = unit->modulator->mutable_parameters();
     
     CONSTRAIN(level1, 0.f, 1.f);
-    p->channel_drive[0] = level1*level1; // * 1.6f;
+    p->channel_drive[0] = level1*level1;
     
     CONSTRAIN(level2, 0.f, 1.f);
-    p->channel_drive[1] = level2*level2; // * 1.6f;
+    p->channel_drive[1] = level2*level2;
     
     CONSTRAIN(algorithm, 0.f, 1.f);
     p->modulation_algorithm = algorithm;
@@ -180,15 +180,6 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
 
     unit->count = count;
 
-//    for (int i=0; i<inNumSamples; ++i) {
-//
-//        input[i].l = carrier[i];
-//        input[i].r = modulator[i];
-//
-//        out[i] = output[i].l;
-//        aux[i] = output[i].r;
-//    }
-//    unit->modulator->Processf(input, output, kBlockSize);
 }
 
 

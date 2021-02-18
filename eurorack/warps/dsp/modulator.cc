@@ -34,7 +34,6 @@
 
 #include "warps/resources.h"
 
-#include <iostream>
 
 namespace warps {
 
@@ -62,7 +61,7 @@ void Modulator::Init(float sample_rate) {
   previous_parameters_.channel_drive[1] = 0.0f;
   previous_parameters_.modulation_algorithm = 0.0f;
   previous_parameters_.modulation_parameter = 0.0f;
-  previous_parameters_.note = 48.0f;
+  previous_parameters_.note = 110.0f;
 
   feedback_sample_ = 0.0f;
 }
