@@ -49,8 +49,24 @@ cd mi-UGens
 ./linux-build.sh PATH/TO/SC/SOURCE/CODE
 ```
 
-
 Collect the UGen files from the build folders of the projects and put them into your SC extensions folder.
+
+### Building for windows
+
+Clone the repository and its submodules:
+
+`git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
+
+Use the included `win-build.sh` script. It takes the SuperCollider source code as its first argument.
+
+Run this in a [Git Bash terminal](https://git-scm.com/download/win):
+
+```bash
+cd mi-UGens
+bash ./win-build.sh PATH/TO/SC/SOURCE/CODE
+```
+
+Collect the UGen files from the `./build_artifacts` folder and put them into your SC extensions folder.
 
 ### Install Quark
 

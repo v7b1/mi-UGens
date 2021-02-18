@@ -15,6 +15,9 @@ include_directories(
 	${MI_PATH}
 )
 
+if(MSVC)
+    add_definitions(-D_USE_MATH_DEFINES) # defines M_PI with MSVC
+endif()
 
 set(MI_SOURCES
     ${MI_PATH}/omi/dsp/dsp.h

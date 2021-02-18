@@ -1,7 +1,12 @@
 #include <random.hpp>
 #include <math.hpp>
 #include <time.h>
+#ifdef _MSC_VER
+#include <Windows.h>
+#include <sysinfoapi.h>
+#else
 #include <sys/time.h>
+#endif
 
 
 namespace rack {
@@ -30,10 +35,18 @@ static uint64_t xoroshiro128plus_next(void) {
 }
 
 void init() {
+#ifdef _MSC_VER
+    FILETIME ftime;
+    GetSystemTimePreciseAsFileTime(&ftime); // 100-ns intervals since Jan 1, 1601 UTC
+    // note low and high are both 32-bit, implicitly converting to 64-bit here
+	xoroshiro128plus_state[0] = ftime.dwLowDateTime;
+	xoroshiro128plus_state[1] = ftime.dwHighDateTime;
+#else
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	xoroshiro128plus_state[0] = tv.tv_sec;
 	xoroshiro128plus_state[1] = tv.tv_usec;
+#endif
 	// Generate a few times to fix the fact that the time is not a uniform u64
 	for (int i = 0; i < 10; i++) {
 		xoroshiro128plus_next();

@@ -31,7 +31,6 @@
 #include "SC_PlugIn.h"
 
 #include "warps/dsp/modulator.h"
-#include "warps/settings.h"
 
 
 // TODO: use libsamplerate for downsampling to local sample rate
@@ -45,7 +44,6 @@ static InterfaceTable *ft;
 struct MiWarps : public Unit {
     
     warps::Modulator    *modulator;
-    warps::Settings     *settings;
     short               patched[2];
     short               easterEgg;
     uint8_t             carrier_shape;
@@ -87,9 +85,9 @@ static void MiWarps_Ctor(MiWarps *unit) {
     unit->count = 0;
     
     SETCALC(MiWarps_next);
-    //MiWarps_next(unit, 64);       // do we reallly need this?
+    //MiWarps_next(unit, 64);       // do we really need this?
     
-    Print("block size: %d samples\n", kBlockSize);
+//    Print("block size: %d samples\n", kBlockSize);
     
 }
 
@@ -106,8 +104,6 @@ static void MiWarps_Dtor(MiWarps *unit) {
     if(unit->modulator)
         delete unit->modulator;
 
-//    if(unit->settings)
-//        delete unit->settings;
 }
 
 
@@ -123,7 +119,7 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     float   algorithm = IN0(4);
     float   timbre = IN0(5);
     short   osc_shape = IN0(6);
-    float   pitch = IN0(7);
+    float   freq = IN0(7);
     //bool    easter_egg = (IN0(8) > 0.f);
     //bool    bypass = (IN0(11) > 0.f);
     
@@ -138,10 +134,10 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     warps::Parameters *p = unit->modulator->mutable_parameters();
     
     CONSTRAIN(level1, 0.f, 1.f);
-    p->channel_drive[0] = level1 * 1.6f;
+    p->channel_drive[0] = level1*level1; // * 1.6f;
     
     CONSTRAIN(level2, 0.f, 1.f);
-    p->channel_drive[1] = level2 * 1.6f;
+    p->channel_drive[1] = level2*level2; // * 1.6f;
     
     CONSTRAIN(algorithm, 0.f, 1.f);
     p->modulation_algorithm = algorithm;
@@ -156,16 +152,9 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     p->carrier_shape = osc_shape;
 //    unit->settings->mutable_state()->carrier_shape = osc_shape;  
     
-    CONSTRAIN(pitch, 0.f, 127.f);
-    p->note = pitch;
+    CONSTRAIN(freq, 0.f, 15000.f);
+    p->note = freq;
     
-    
-//    for(int count=0; count<inNumSamples; count+=size) {
-//
-//        unit->strummer.Process(input+count, size, ps);
-//        unit->part.Process(*ps, *patch,
-//                           input+count, out1+count, out2+count, size);
-//    }
     
     //unit->modulator->set_bypass(true);
     

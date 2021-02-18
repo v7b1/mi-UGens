@@ -12,6 +12,9 @@ include_directories(${SC_PATH}/external_libraries/libsndfile/)
 
 include_directories(${MUTABLE_PATH})
 
+if(MSVC)
+        add_definitions(-D_USE_MATH_DEFINES) # defines M_PI with MSVC
+endif()
 
 set(STMLIB_SOURCES 
 	${STMLIB_PATH}/stmlib.h

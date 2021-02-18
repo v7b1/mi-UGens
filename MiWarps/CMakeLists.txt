@@ -16,6 +16,9 @@ include_directories(${MUTABLE_PATH})
 include_directories(${LIBSR_PATH})
 include_directories(${LIBSRI_PATH})
 
+if(MSVC)
+    add_definitions(-D_USE_MATH_DEFINES) # defines M_PI with MSVC
+endif()
 
 set(STMLIB_SOURCES
         ${STMLIB_PATH}/stmlib.h
@@ -42,8 +45,6 @@ set(MI_SOURCES
 	${MI_PATH}/dsp/vocoder.h
 	${MI_PATH}/resources.cc
 	${MI_PATH}/resources.h
-	${MI_PATH}/settings.cc
-	${MI_PATH}/settings.h
 )
 
 

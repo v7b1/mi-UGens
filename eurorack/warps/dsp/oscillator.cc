@@ -72,7 +72,7 @@ float Oscillator::RenderSine(
   float phase = phase_;
   ParameterInterpolator phase_increment(
       &phase_increment_,
-      midi_to_increment(note),
+      note * one_hertz_, //midi_to_increment(note),     //vb, re-interpret note as frequency
       size);
   while (size--) {
     phase += phase_increment.Next();
@@ -100,7 +100,7 @@ float Oscillator::RenderPolyblep(
   float phase = phase_;
   ParameterInterpolator phase_increment(
       &phase_increment_,
-      midi_to_increment(note),
+      note * one_hertz_, //midi_to_increment(note),     //vb, re-interpret note as frequency
       size);
   
   float next_sample = next_sample_;
@@ -200,7 +200,8 @@ float Oscillator::RenderNoise(
     out[i] = 2.0f * noise - 1.0f;
   }
   Duck(out, modulation, out, size);
-  filter_.set_f_q<FREQUENCY_ACCURATE>(midi_to_increment(note) * 4.0f, 1.0f);
+//  filter_.set_f_q<FREQUENCY_ACCURATE>(midi_to_increment(note) * 4.0f, 1.0f);
+    filter_.set_f_q<FREQUENCY_ACCURATE>(note * one_hertz_ * 4.0f, 1.0f);
   filter_.Process<FILTER_MODE_LOW_PASS>(out, out, size);
   return 1.0f;
 }
