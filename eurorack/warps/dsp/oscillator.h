@@ -77,6 +77,7 @@ class Oscillator {
   float RenderPolyblep(float, float*, float*, size_t);
   float RenderSine(float, float*, float*, size_t);
   float RenderNoise(float, float*, float*, size_t);
+    float RenderPolyblepTri(float, float*, float*, size_t); // vb, add a separate tri function renderer
   
   static inline float ThisBlepSample(float t) {
     return 0.5f * t * t;
@@ -92,6 +93,10 @@ class Oscillator {
   float next_sample_;
   float lp_state_;
   float hp_state_;
+    // vb, we need separate variables for triangular waves
+    float phase_tri_;
+    float next_sample_tri_;
+    float lp_state_tri_;
   
   float external_input_level_;
   float one_hertz_;

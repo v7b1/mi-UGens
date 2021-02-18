@@ -47,6 +47,9 @@ void Oscillator::Init(float sample_rate) {
   phase_increment_ = 100.0f * one_hertz_;
   hp_state_ = 0.0f;
   lp_state_ = 0.0f;
+    lp_state_tri_ = 0.0f;
+    next_sample_tri_ = 0.0f;
+    phase_tri_ = 0.0f;
   
   high_ = false;
   
@@ -91,6 +94,62 @@ float Oscillator::RenderSine(
   return 1.0f;
 }
 
+// vb, add a separate render function for triangle waves
+float Oscillator::RenderPolyblepTri(
+                                    float note,
+                                    float* modulation,
+                                    float* out,
+                                    size_t size) {
+    float phase = phase_tri_;
+    ParameterInterpolator phase_increment(
+                                          &phase_increment_,
+                                          note * one_hertz_,
+                                          size);
+    
+    float next_sample = next_sample_tri_;
+    bool high = high_;
+    float lp_state = lp_state_tri_;
+    
+    while (size--) {
+        float this_sample = next_sample;
+        next_sample = 0.0f;
+        
+        float modulated_increment = phase_increment.Next() * (1.0f + *modulation++);
+        
+        if (modulated_increment <= 0.0f) {
+            modulated_increment = 1.0e-7;
+        }
+        phase += modulated_increment;
+        
+        if (!high && phase >= 0.5f) {
+            float t = (phase - 0.5f) / modulated_increment;
+            this_sample += ThisBlepSample(t);
+            next_sample += NextBlepSample(t);
+            high = true;
+        }
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
+            float t = phase / modulated_increment;
+            this_sample -= ThisBlepSample(t);
+            next_sample -= NextBlepSample(t);
+            high = false;
+        }
+        const float integrator_coefficient = modulated_increment * 0.0625f;
+        next_sample += phase < 0.5f ? 0.0f : 1.0f;
+        this_sample = 128.0f * (this_sample - 0.5f);
+        lp_state += integrator_coefficient * (this_sample - lp_state);
+        *out++ = lp_state;
+    }
+    
+    high_ = high;
+    phase_tri_ = phase;
+    next_sample_tri_ = next_sample;
+    lp_state_tri_ = lp_state;
+    
+    return 1.0f;
+}
+    
+    
 template<OscillatorShape shape>
 float Oscillator::RenderPolyblep(
     float note,
@@ -104,7 +163,7 @@ float Oscillator::RenderPolyblep(
       size);
   
   float next_sample = next_sample_;
-  bool high = high_;
+//  bool high = high_;
   float lp_state = lp_state_;
   float hp_state = hp_state_;
   
@@ -119,26 +178,26 @@ float Oscillator::RenderPolyblep(
     }
     phase += modulated_increment;
     
-    if (shape == OSCILLATOR_SHAPE_TRIANGLE) {
-      if (!high && phase >= 0.5f) {
-        float t = (phase - 0.5f) / modulated_increment;
-        this_sample += ThisBlepSample(t);
-        next_sample += NextBlepSample(t);
-        high = true;
-      }
-      if (phase >= 1.0f) {
-        phase -= 1.0f;
-        float t = phase / modulated_increment;
-        this_sample -= ThisBlepSample(t);
-        next_sample -= NextBlepSample(t);
-        high = false;
-      }
-      const float integrator_coefficient = modulated_increment * 0.0625f;
-      next_sample += phase < 0.5f ? 0.0f : 1.0f;
-      this_sample = 128.0f * (this_sample - 0.5f);
-      lp_state += integrator_coefficient * (this_sample - lp_state);
-      *out++ = lp_state;
-    } else {
+//    if (shape == OSCILLATOR_SHAPE_TRIANGLE) {
+//      if (!high && phase >= 0.5f) {
+//        float t = (phase - 0.5f) / modulated_increment;
+//        this_sample += ThisBlepSample(t);
+//        next_sample += NextBlepSample(t);
+//        high = true;
+//      }
+//      if (phase >= 1.0f) {
+//        phase -= 1.0f;
+//        float t = phase / modulated_increment;
+//        this_sample -= ThisBlepSample(t);
+//        next_sample -= NextBlepSample(t);
+//        high = false;
+//      }
+//      const float integrator_coefficient = modulated_increment * 0.0625f;
+//      next_sample += phase < 0.5f ? 0.0f : 1.0f;
+//      this_sample = 128.0f * (this_sample - 0.5f);
+//      lp_state += integrator_coefficient * (this_sample - lp_state);
+//      *out++ = lp_state;
+//    } else {
       if (phase >= 1.0f) {
         phase -= 1.0f;
         float t = phase / modulated_increment;
@@ -158,10 +217,10 @@ float Oscillator::RenderPolyblep(
         *out++ = 4.0f * lp_state;
         hp_state = this_sample;
       }
-    }
+//    }
   }
   
-  high_ = high;
+//  high_ = high;
   phase_ = phase;
   next_sample_ = next_sample;
   lp_state_ = lp_state;
@@ -209,7 +268,7 @@ float Oscillator::RenderNoise(
 /* static */
 Oscillator::RenderFn Oscillator::fn_table_[] = {
   &Oscillator::RenderSine,
-  &Oscillator::RenderPolyblep<OSCILLATOR_SHAPE_TRIANGLE>,
+  &Oscillator::RenderPolyblepTri, //&Oscillator::RenderPolyblep<OSCILLATOR_SHAPE_TRIANGLE>,
   &Oscillator::RenderPolyblep<OSCILLATOR_SHAPE_SAW>,
   &Oscillator::RenderPolyblep<OSCILLATOR_SHAPE_PULSE>,
   &Oscillator::RenderNoise,
