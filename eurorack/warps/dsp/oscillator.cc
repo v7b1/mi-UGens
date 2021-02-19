@@ -262,7 +262,10 @@ float Oscillator::RenderNoise(
 //  filter_.set_f_q<FREQUENCY_ACCURATE>(midi_to_increment(note) * 4.0f, 1.0f);
     filter_.set_f_q<FREQUENCY_ACCURATE>(note * one_hertz_ * 4.0f, 1.0f);
   filter_.Process<FILTER_MODE_LOW_PASS>(out, out, size);
-  return 1.0f;
+    // vb boost output a little for low cf values
+    float boost = 1.0f / (note * 0.001);
+    CONSTRAIN(boost, 1.0f, 20.0f);
+    return boost; //1.0f;
 }
 
 /* static */

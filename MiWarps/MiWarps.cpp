@@ -33,10 +33,8 @@
 #include "warps/dsp/modulator.h"
 
 
-// TODO: use libsamplerate for downsampling to local sample rate
 
-
-const size_t kBlockSize = 96; //    96;       // TODO: must be 96 because of Vocoder?
+const size_t kBlockSize = 60; //    96;
 
 static InterfaceTable *ft;
 
@@ -45,8 +43,6 @@ struct MiWarps : public Unit {
     
     warps::Modulator    *modulator;
     short               patched[2];
-    short               easterEgg;
-    uint8_t             carrier_shape;
     
     warps::FloatFrame   *input;
     warps::FloatFrame   *output;
@@ -76,19 +72,17 @@ static void MiWarps_Ctor(MiWarps *unit) {
     unit->modulator->Init(SAMPLERATE);
     
 
-    unit->input = (warps::FloatFrame*)RTAlloc(unit->mWorld, kBlockSize*sizeof(warps::FloatFrame));
-    unit->output = (warps::FloatFrame*)RTAlloc(unit->mWorld, kBlockSize*sizeof(warps::FloatFrame));
-    memset(unit->output, 0, kBlockSize*sizeof(warps::FloatFrame));
-    unit->silence = (float*)RTAlloc(unit->mWorld, kBlockSize*sizeof(float));
-    memset(unit->silence, 0, kBlockSize*sizeof(float));
+    unit->input = (warps::FloatFrame*)RTAlloc(unit->mWorld, warps::kMaxBlockSize*sizeof(warps::FloatFrame));
+    unit->output = (warps::FloatFrame*)RTAlloc(unit->mWorld, warps::kMaxBlockSize*sizeof(warps::FloatFrame));
+    memset(unit->output, 0, warps::kMaxBlockSize*sizeof(warps::FloatFrame));
+    unit->silence = (float*)RTAlloc(unit->mWorld, warps::kMaxBlockSize*sizeof(float));
+    memset(unit->silence, 0, warps::kMaxBlockSize*sizeof(float));
     
     unit->count = 0;
     
     SETCALC(MiWarps_next);
-    //MiWarps_next(unit, 64);       // do we really need this?
-    
-//    Print("block size: %d samples\n", kBlockSize);
-    
+    MiWarps_next(unit, 64);
+
 }
 
 
@@ -122,7 +116,6 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     float   freq = IN0(7);
     float   pre_gain = IN0(8);
     bool    easter_egg = (IN0(9) > 0.f);
-    //bool    bypass = (IN0(11) > 0.f);
     
     float   *out = OUT(0);
     float   *aux = OUT(1);
@@ -146,20 +139,24 @@ void MiWarps_next( MiWarps *unit, int inNumSamples)
     CONSTRAIN(timbre, 0.f, 1.f);
     p->modulation_parameter = timbre;
     
-    // TODO: frequency shift / phase shift, easteregg
-    
-    
     CONSTRAIN(osc_shape, 0, 3);
     p->carrier_shape = osc_shape;
-//    unit->settings->mutable_state()->carrier_shape = osc_shape;  
     
     CONSTRAIN(freq, 0.0f, 15000.0f);
     p->note = freq;
     
-    
     CONSTRAIN(pre_gain, 1.0f, 10.0f);
     p->limiter_pre_gain = pre_gain;
-//    unit->modulator->vocoder_.set_limiter_pre_gain(pre_gain);
+
+    // easter_egg mode?
+    if(easter_egg) {
+        p->frequency_shift_pot = algorithm;
+        p->phase_shift = algorithm;
+        unit->modulator->set_easter_egg(true);
+    }
+    else
+        unit->modulator->set_easter_egg(false);
+    
     
     //unit->modulator->set_bypass(true);
     
