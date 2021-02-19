@@ -3,9 +3,10 @@
 MiWarps : MultiOutUGen {
 
 	*ar {
-		arg carrier=0, modulator=0, lev1=0.5, lev2=0.5, algo=0, timb=0, osc=1, freq=110, easteregg=0, mul=1.0, add=0;
+		arg carrier=0, modulator=0, lev1=0.5, lev2=0.5, algo=0, timb=0, osc=0, freq=110, vgain=1, easteregg=0; //, mul=1.0, add=0;
 
-		^this.multiNew('audio', carrier, modulator, lev1, lev2, algo, timb, osc, freq, easteregg).madd(mul, add);
+		^this.multiNew('audio', carrier, modulator, lev1, lev2, algo, timb, osc, freq, vgain, easteregg);
+		//.madd(mul, add);
 	}
 	/*
 	checkInputs {
