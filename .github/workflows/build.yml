@@ -94,6 +94,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{github.workspace}}/build/mi-UGens-${{runner.os}}.zip
+        file: ${{github.workspace}}/mi-UGens-${{runner.os}}.zip
         asset_name: mi-UGens-${{runner.os}}.zip
         tag: ${{ github.ref }}
