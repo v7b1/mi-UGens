@@ -61,14 +61,12 @@ jobs:
     - name: Zip up build (Unix)
       if: matrix.os != 'windows-latest'
       shell: bash
-      working-directory: ${{github.workspace}}/build
       run: zip -r mi-UGens-${{runner.os}} mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      working-directory: ${{github.workspace}}\build
       run: Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
 
     - name: Check if release has been created
