@@ -22,34 +22,52 @@ jobs:
     - name: Get SC source code
       run: git clone https://github.com/supercollider/supercollider.git ${{github.workspace}}/supercollider
 
-    - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: cmake -E make_directory ${{github.workspace}}/build
+#    - name: Create Build Environment
+#      # Some projects don't allow in-source building, so create a separate build directory
+#      # We'll use this as our working directory for all subsequent commands
+#      run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure CMake (Unix)
-      shell: bash
-      if: matrix.os != 'windows-latest'
-      working-directory: ${{github.workspace}}/build
-      run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}/supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/build/install
+#    - name: Configure CMake (Unix)
+#      shell: bash
+#      if: matrix.os != 'windows-latest'
+#      working-directory: ${{github.workspace}}/build
+#      run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}/supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/build/install
 
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      working-directory: ${{github.workspace}}\build
-      run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}\supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}\build\install
+#    - name: Configure CMake (Windows)
+#      if: matrix.os == 'windows-latest'
+#      shell: pwsh
+#      working-directory: ${{github.workspace}}\build
+#      run: cmake .. -DCMAKE_BUILD_TYPE='Release' -DSC_PATH=${{github.workspace}}\supercollider -DCMAKE_INSTALL_PREFIX=${{github.workspace}}\build\install
 
-    - name: Build (Unix)
-      if: matrix.os != 'windows-latest'
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: cmake --build . --config "Release" --target install
+#    - name: Build (Unix)
+#      if: matrix.os != 'windows-latest'
+#      working-directory: ${{github.workspace}}/build
+#      shell: bash
+#      run: cmake --build . --config "Release" --target install
+
+#    - name: Build (Windows)
+#      working-directory: ${{github.workspace}}\build
+#      if: matrix.os == 'windows-latest'
+#      shell: pwsh
+#      run: cmake --build . --config "Release" --target install
 
     - name: Build (Windows)
       working-directory: ${{github.workspace}}\build
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: cmake --build . --config "Release" --target install
+      run: sh win-build.sh
+
+    - name: Build (Linux)
+      working-directory: ${{github.workspace}}\build
+      if: matrix.os == 'ubuntu-18.04'
+      shell: bash
+      run: sh linux-build.sh
+
+    - name: Build (Windows)
+      working-directory: ${{github.workspace}}\build
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: sh mac-build.sh
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
