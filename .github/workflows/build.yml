@@ -39,19 +39,32 @@ jobs:
       shell: bash
       run: bash mac-build.sh ${{github.workspace}}/supercollider
 
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{github.workspace}}/mi-UGens
+
+    - name: Prepare library for zip file
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: cp **/build/**.dylib **/build/**.so mi-UGens
+
+    - name: Prepare library for zip file
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: copy **/build/**.dll mi-UGens
+
       # Gather all files in a zip
     - name: Zip up build (Unix)
       if: matrix.os != 'windows-latest'
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: zip -r mi-UGens-${{runner.os}} install/mi-UGens
+      run: zip -r mi-UGens-${{runner.os}} mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
       working-directory: ${{github.workspace}}\build
-      run: Compress-7Zip "install\mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
+      run: Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
 
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
