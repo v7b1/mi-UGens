@@ -55,7 +55,7 @@ jobs:
     - name: Prepare library for zip file
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: copy sc\* **\build\**.dll mi-UGens
+      run: copy sc\*  mi-UGens; copy **\build\**.dll mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
