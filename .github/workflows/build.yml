@@ -52,19 +52,16 @@ jobs:
 #      run: cmake --build . --config "Release" --target install
 
     - name: Build (Windows)
-      working-directory: ${{github.workspace}}\build
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: sh win-build.sh
 
     - name: Build (Linux)
-      working-directory: ${{github.workspace}}\build
       if: matrix.os == 'ubuntu-18.04'
       shell: bash
       run: sh linux-build.sh
 
     - name: Build (Windows)
-      working-directory: ${{github.workspace}}\build
       if: matrix.os == 'macos-latest'
       shell: bash
       run: sh mac-build.sh
