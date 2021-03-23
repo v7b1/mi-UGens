@@ -43,9 +43,14 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/mi-UGens
 
     - name: Prepare library for zip file
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'ubuntu-18.04'
       shell: bash
-      run: cp **/build/**.dylib **/build/**.so mi-UGens
+      run: cp **/build/**.so mi-UGens
+
+    - name: Prepare library for zip file
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: cp **/build/**.dylib mi-UGens
 
     - name: Prepare library for zip file
       if: matrix.os == 'windows-latest'
