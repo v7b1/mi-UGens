@@ -50,7 +50,7 @@ jobs:
     - name: Prepare library for zip file
       if: matrix.os == 'macos-latest'
       shell: bash
-      run: ls -l && cp -r sc/* **/build/**.so mi-UGens
+      run: ls -l **/build && cp -r sc/* **/build/**.so mi-UGens
 
     - name: Prepare library for zip file
       if: matrix.os == 'windows-latest'
