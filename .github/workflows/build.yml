@@ -45,17 +45,17 @@ jobs:
     - name: Prepare library for zip file
       if: matrix.os == 'ubuntu-18.04'
       shell: bash
-      run: cp **/build/**.so mi-UGens
+      run: cp -r sc/* **/build/**.so mi-UGens
 
     - name: Prepare library for zip file
       if: matrix.os == 'macos-latest'
       shell: bash
-      run: cp **/build/**.dylib mi-UGens
+      run: ls -l && cp -r sc/* **/build/**.so mi-UGens
 
     - name: Prepare library for zip file
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: copy **/build/**.dll mi-UGens
+      run: copy sc\* **\build\**.dll mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
