@@ -50,19 +50,25 @@ jobs:
     - name: Prepare library for zip file
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: copy sc\* build\mi-UGens; copy **\build\**.dll build/mi-UGens
+      run: |
+        copy sc\* build\mi-UGens
+        copy **\build\**.dll build/mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
       if: matrix.os != 'windows-latest'
       shell: bash
-      run: cd build && zip -r mi-UGens-${{runner.os}} mi-UGens
+      run: |
+        cd build
+        zip -r mi-UGens-${{runner.os}} mi-UGens
 
       # Gather all files in a zip
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: cd build; Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
+      run: |
+        cd build
+        Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
 
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
