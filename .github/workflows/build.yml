@@ -66,7 +66,11 @@ jobs:
     - name: Zip up build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: Compress-7Zip "build\mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
+      working-directory: ${{github.workspace}}\build
+      run: |
+        Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
+        dir
+        dir mi-UGens
 
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
