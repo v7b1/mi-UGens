@@ -68,6 +68,7 @@ jobs:
       shell: pwsh
       run: |
         cd build
+        dir
         Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
 
     - name: Check if release has been created
