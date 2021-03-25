@@ -68,8 +68,8 @@ jobs:
       shell: pwsh
       run: |
         cd build
-        dir
         Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip
+        dir
 
     - name: Check if release has been created
       uses: mukunku/tag-exists-action@v1.0.0
