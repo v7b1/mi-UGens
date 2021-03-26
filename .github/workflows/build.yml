@@ -51,7 +51,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
-        copy sc/* build/mi-UGens
+        xcopy sc build\mi-UGens\ /E
         copy build_artifacts/* build/mi-UGens
 
       # Gather all files in a zip
