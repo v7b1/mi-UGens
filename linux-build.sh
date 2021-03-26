@@ -10,7 +10,7 @@ cd MiBraids/libsamplerate
 echo "Building libsamplerate"
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLIBSAMPLERATE_EXAMPLES=OFF -DBUILD_TESTING=OFF ..
 make
 cd ../../..
 

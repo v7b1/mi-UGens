@@ -6,7 +6,7 @@ set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
 set(MI_PATH ${MUTABLE_PATH}/braids)
 # set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../libs")
-set(LIBSR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/build")
+set(LIBSR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/build/src")
 set(LIBSRI_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/include")
 
 include_directories(${SC_PATH}/include/plugin_interface)

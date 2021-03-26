@@ -8,10 +8,10 @@ MI_UGENS=build/mi-UGens
 
 # MiBraids depends on libsamplerate, let's build that first
 cd MiBraids/libsamplerate
-echo "Building libsamplerate"
+echo "Building libsamplerate (without examples or testing)"
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLIBSAMPLERATE_EXAMPLES=OFF -DBUILD_TESTING=OFF ..
 make
 cd ../../..
 
