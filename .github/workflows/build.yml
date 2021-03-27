@@ -1,0 +1,99 @@
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-18.04, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install 7Zip (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: Install-Module 7Zip4PowerShell -Force -Verbose
+
+    - name: Get SC source code
+      run: git clone https://github.com/supercollider/supercollider.git ${{github.workspace}}/supercollider
+
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: bash win-build.sh ${{github.workspace}}\supercollider
+
+    - name: Build (Linux)
+      if: matrix.os == 'ubuntu-18.04'
+      shell: bash
+      run: bash linux-build.sh ${{github.workspace}}/supercollider
+
+    - name: Build (Mac OS X)
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: bash mac-build.sh ${{github.workspace}}/supercollider
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{github.workspace}}/build/mi-UGens
+
+    - name: Prepare library for zip file
+      if: matrix.os == 'ubuntu-18.04'
+      shell: bash
+      run: cp -r sc/* **/build/**.so build/mi-UGens
+
+    - name: Prepare library for zip file
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        xcopy sc build\mi-UGens\ /E
+        copy build_artifacts/* build/mi-UGens
+
+      # Gather all files in a zip
+    - name: Zip up build (Unix)
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: |
+        cd build
+        zip -r mi-UGens-${{runner.os}} mi-UGens
+
+      # Gather all files in a zip
+    - name: Zip up build (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      working-directory: ${{github.workspace}}\build
+      run: Compress-7Zip "mi-UGens" -ArchiveFileName "mi-UGens-${{runner.os}}.zip" -Format Zip -PreserveDirectoryRoot
+
+    - name: Check if release has been created
+      uses: mukunku/tag-exists-action@v1.0.0
+      id: checkTag
+      with:
+        tag: 'v1'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Publish build
+    - name: Create Release
+      if: steps.checkTag.outputs.exists == false
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: mi-UGens-${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{github.workspace}}/build/mi-UGens-${{runner.os}}.zip
+        asset_name: mi-UGens-${{runner.os}}.zip
+        tag: ${{ github.ref }}
