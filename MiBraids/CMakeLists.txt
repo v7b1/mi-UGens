@@ -80,7 +80,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Accelerate")
 endif()
 
 if(MSVC)
-        target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBSR_PATH}/src/Release/samplerate.lib)
+        target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBSR_PATH}/Release/samplerate.lib)
 else()
         target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBSR_PATH}/libsamplerate.a)
 endif()
