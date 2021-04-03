@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.8)
 project (MiMu)
 
 include_directories(${SC_PATH}/include/plugin_interface)
