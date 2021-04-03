@@ -29,7 +29,7 @@ do
 	cd build
 
 	# # Build
-	cmake -DSC_PATH=$SC_SRC ..
+	cmake -DSC_PATH=$SC_SRC -DCMAKE_BUILD_TYPE=Release ..
 	cmake --build . --config Release
 
 	# # move binaries 

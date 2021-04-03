@@ -14,7 +14,30 @@ https://vboehm.net
 
 
 
-## Building for mac
+## Installing
+
+Go to the [release page](https://github.com/v7b1/mi-UGens/releases) , download the appropriate binaries for your OS and unpack the files into your SC extensions folder. (Re-)start SuperCollider or recompile the class library.
+
+ 
+
+## Building
+
+Clone the repository and its submodules:
+
+`git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
+
+Use the included platform specific`build.sh` script. It takes the SuperCollider source code as its first argument.
+
+```bash
+cd mi-UGens
+./<my_platform>-build.sh PATH/TO/SC/SOURCE/CODE
+```
+
+On Windows, use this [Git Bash terminal](https://git-scm.com/download/win) to run the above lines.
+
+
+
+#### Building for mac
 
 - clone the repository and its submodules
 
@@ -40,15 +63,13 @@ cd mi-UGens
 ./mac-build.sh PATH/TO/SC/SOURCE/CODE
 ```
 
+
+
 Then step inside the newly created build folder and copy the Mi-UGens folder to your SuperCollider extensions.
 
 
 
-For compiled mac versions see https://vboehm.net/downloads
-
-
-
-## Building for linux
+#### Building for linux
 
 Clone the repository and its submodules
 
@@ -65,7 +86,9 @@ cd mi-UGens
 
 Collect the UGen files from the build folders of the projects and put them together with the sc folder into your SC extensions folder.
 
-### Building for windows
+
+
+#### Building for windows
 
 Clone the repository and its submodules:
 
