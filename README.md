@@ -26,7 +26,7 @@ Clone the repository and its submodules:
 
 `git clone --recurse-submodules https://github.com/v7b1/mi-UGens.git`
 
-Use the included platform specific`build.sh` script. It takes the SuperCollider source code as its first argument.
+Use the included platform specific `build.sh` script. It takes the SuperCollider source code as its first argument.
 
 ```bash
 cd mi-UGens

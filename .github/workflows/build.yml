@@ -27,32 +27,12 @@ jobs:
     - name: Build (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
-      run: bash win-build.sh ${{github.workspace}}\supercollider
+      run: bash build.sh ${{github.workspace}}\supercollider
 
-    - name: Build (Linux)
-      if: matrix.os == 'ubuntu-18.04'
+    - name: Build (Unix)
+      if: matrix.os != 'windows-latest'
       shell: bash
-      run: bash linux-build.sh ${{github.workspace}}/supercollider
-
-    - name: Build (Mac OS X)
-      if: matrix.os == 'macos-latest'
-      shell: bash
-      run: bash mac-build.sh ${{github.workspace}}/supercollider
-
-    - name: Create Build Directory
-      run: cmake -E make_directory ${{github.workspace}}/build/mi-UGens
-
-    - name: Prepare library for zip file
-      if: matrix.os == 'ubuntu-18.04'
-      shell: bash
-      run: cp -r sc/* **/build/**.so build/mi-UGens
-
-    - name: Prepare library for zip file
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        xcopy sc build\mi-UGens\ /E
-        copy build_artifacts/* build/mi-UGens
+      run: bash build.sh ${{github.workspace}}/supercollider
 
       # Gather all files in a zip
     - name: Zip up build (Unix)
