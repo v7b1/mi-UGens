@@ -1,0 +1,91 @@
+TITLE:: MiGrids
+summary:: topographic drum sequencer
+categories:: Undocumented classes, UGens>Undocumented
+related:: Classes/SomeRelatedClass
+
+DESCRIPTION::
+MiGrids is a clone of the 'Grids' eurorack module by link::https://mutable-instruments.net/modules/grids::. It's a 3-channel, algorithmic, rhythmic pattern generator based on data and models extracted from actual drum loops. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master::.
+
+Please refer to the original Clouds manual for indepth information: link::https://mutable-instruments.net/modules/grids/manual/::.
+
+
+CLASSMETHODS::
+
+METHOD:: ar
+(describe method here)
+
+ARGUMENT:: bpm
+bpm of internal clock (needs a fix: right now only works correctly at SR of 48kHz). Accurate only at integer bpm values  between 20 and 511 processed.
+
+ARGUMENT:: map_x
+x coordinate of drum map, or number of steps (in euclidean mode), (0..1).
+
+ARGUMENT:: map_y
+y coordinate of drum map, or number of steps (in euclidean mode), (0..1).
+
+ARGUMENT:: chaos
+choas amount, or 'swing' amount, if swing is enabled (only works with internal clock), (0..1).
+
+ARGUMENT:: bd_density
+density of channel 1 triggers (0..1)
+
+ARGUMENT:: sd_density
+density of channel 2 triggers (0..1)
+
+ARGUMENT:: hh_density
+density of channel 3 triggers (0..1)
+
+ARGUMENT:: mode
+mode of operation. 0: euclidean mode, 1: drum mode (default). When euclidean sequencer mode is enabled, the map_x, map_y and chaos params control the duration (number of steps) of the sequence; while the density params control the fill rate.
+
+ARGUMENT:: swing
+swing mode on/off (0 / 1). If swing is active, the 'chaos' param sets the swing amount.
+
+ARGUMENT:: config
+config 0/1, configuration of the 'accent' outputs (4 to 6). 0: normal, outputs 4 to 6 carry accents of the respective channels (1 to 3).  1: clock_info, output 4: global accent, output 5: clock out, 6: reset/bar
+
+
+returns:: 3 channels of trigger pulses + 3 channels of accents (or clock info)
+
+
+
+EXAMPLES::
+
+code::
+
+(
+{
+	var x = LFNoise1.kr(0.05).range(0, 1);
+	var y = LFNoise1.kr(0.05).range(0, 1);
+	var chaos = 0.5;
+
+	var pulses = MiGrids.ar(133, x, y, chaos, 0.25, 0.25, 0.3);
+
+	var ringdur = LFNoise1.kr(0.1).range(0, 2);
+
+	var out = Ringz.ar( pulses[0..2], [300, 700, 800], ringdur, 0.05);
+	Splay.ar(out);
+
+}.play;
+)
+
+
+// swing...
+(
+{
+	var bpm = 120;
+	var x = 0.493;
+	var y = 0.5;
+	var swing_amount = 0.6;
+
+	var mode = 1; // swing only works in 'drumming' mode
+	var swing = 1;
+
+	var pulses = MiGrids.ar(bpm, x, y, swing_amount, 0.39, 0.25, 0.59, mode, swing);
+
+	var out = Ringz.ar( pulses[0..2], [100, 700, 1200], [1, 0.3, 0.1], 0.05);
+	Splay.ar(out);
+
+}.play;
+)
+::
