@@ -173,15 +173,15 @@ void GranularProcessor::Process(
     ShortFrame* output,
     size_t size) {*/
 void GranularProcessor::Process(
-                                    FloatFrame* in_,
+                                    FloatFrame* in,
                                     FloatFrame* out_,
                                     size_t size) {
   // TIC
-  if (bypass_) {
-//    copy(&input[0], &input[size], &output[0]);
-      copy(&in_[0], &in_[size], &out_[0]);
-    return;
-  }
+//  if (bypass_) {
+////    copy(&input[0], &input[size], &output[0]);
+//      copy(&in_[0], &in_[size], &out_[0]);
+//    return;
+//  }
   
   if (silence_ || reset_buffers_ ||
       previous_playback_mode_ != playback_mode_) {
@@ -197,12 +197,17 @@ void GranularProcessor::Process(
     in_[i].l = static_cast<float>(input[i].l) / 32768.0f;
     in_[i].r = static_cast<float>(input[i].r) / 32768.0f;
   }*/
-  if (num_channels_ == 1) {
-    for (size_t i = 0; i < size; ++i) {
-      in_[i].l = (in_[i].l + in_[i].r) * 0.5f;
-      in_[i].r = in_[i].l;
-    }
-  }
+    
+    // vb, we have to copy input signal!
+    copy(&in[0], &in[size], &in_[0]);
+    
+    // vb, we always use stereo input
+//  if (num_channels_ == 1) {
+//    for (size_t i = 0; i < size; ++i) {
+//      in_[i].l = (in_[i].l + in_[i].r) * 0.5f;
+//      in_[i].r = in_[i].l;
+//    }
+//  }
   
   // Apply feedback, with high-pass filtering to prevent build-ups at very
   // low frequencies (causing large DC swings).
@@ -304,8 +309,8 @@ void GranularProcessor::Process(
     output[i].l = SoftConvert(l);
     output[i].r = SoftConvert(r);
        */
-      float l = in_[i].l * fade_out;
-      float r = in_[i].r * fade_out;
+      float l = in[i].l * fade_out;
+      float r = in[i].r * fade_out;
       l += out_[i].l * post_gain * fade_in;
       r += out_[i].r * post_gain * fade_in;
       out_[i].l = SoftLimit(l * 0.5f);

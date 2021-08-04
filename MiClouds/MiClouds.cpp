@@ -153,7 +153,7 @@ static void MiClouds_Ctor(MiClouds *unit) {
     unit->pcount = 0;
     
     uint16 numAudioInputs = unit->mNumInputs - kNumArgs;
-    Print("MiClouds > numAudioIns: %d\n", numAudioInputs);
+//    Print("MiClouds > numAudioIns: %d\n", numAudioInputs);
     
     SETCALC(MiClouds_next);
     ClearUnitOutputs(unit, 1);
@@ -180,13 +180,7 @@ static void MiClouds_Dtor(MiClouds *unit) {
 void MiClouds_next( MiClouds *unit, int inNumSamples )
 {
     float   pitch = IN0(0);
-/*
-    float   pos_in = IN0(1);
-    float   size_in = IN0(2);
-    float   dens_in = IN0(3);
-    float   tex_in = IN0(4);
-    float   dry_wet_in = IN0(5);
- */
+
     float   in_gain = IN0(6);
     float   spread = IN0(7);
     float   reverb = IN0(8);
@@ -239,20 +233,6 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
     p->texture = smoothed_value[PARAM_TEXTURE];
     p->dry_wet = smoothed_value[PARAM_DRYWET];
     
-    
-    /*
-    CONSTRAIN(pos_in, 0.f, 1.f);
-    CONSTRAIN(size_in, 0.f, 1.f);
-    CONSTRAIN(dens_in, 0.f, 1.f);
-    CONSTRAIN(tex_in, 0.f, 1.f);
-    CONSTRAIN(dry_wet_in, 0.f, 1.f);
-    
-    p->position = pos_in;
-    p->size = size_in;
-    p->density = dens_in;
-    p->texture = tex_in;
-    p->dry_wet = dry_wet_in;
-    */
     
     CONSTRAIN(in_gain, 0.125f, 8.f);
     CONSTRAIN(spread, 0.f, 1.f);

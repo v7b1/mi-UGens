@@ -214,7 +214,7 @@ class GranularProcessor {
   AudioBuffer<RESOLUTION_8_BIT_MU_LAW> buffer_8_[2];
   AudioBuffer<RESOLUTION_16_BIT> buffer_16_[2];
   
-  //FloatFrame in_[kMaxBlockSize];
+  FloatFrame in_[kMaxBlockSize];
   FloatFrame in_downsampled_[kMaxBlockSize / kDownsamplingFactor];
   FloatFrame out_downsampled_[kMaxBlockSize / kDownsamplingFactor];
   //FloatFrame out_[kMaxBlockSize];
