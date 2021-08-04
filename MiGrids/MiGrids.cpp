@@ -81,6 +81,12 @@ static void MiGrids_Ctor(MiGrids *unit) {
     unit->clock.Init();
     unit->pattern_generator.Init();
     
+    uint8_t reso = IN0(10);
+    CONSTRAIN(reso, 0, 2);
+    unit->pattern_generator.set_clock_resolution(reso);
+    unit->clock.Update(120, unit->pattern_generator.clock_resolution());
+    unit->pattern_generator.Reset();
+    
     unit->swing_amount = 0;
     unit->count = 0;
     unit->sr = SAMPLERATE;
@@ -106,7 +112,7 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     uint8_t     bd_density = IN0(4) * 255.0f;
     uint8_t     sd_density = IN0(5) * 255.0f;
     uint8_t     hh_density = IN0(6) * 255.0f;
-    uint8_t     mode    = ( IN0(7) != 0.f );
+    uint8_t     mode    = ( IN0(7) == 0.f );
     uint8_t     swing  = ( IN0(8) != 0.f );
     uint8_t     config  = ( IN0(9) != 0.f );
     
