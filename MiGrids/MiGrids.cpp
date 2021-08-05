@@ -28,8 +28,6 @@
  */
 
 
-// BPM VALUES ONLY WORK CORRECTLY AT SR 48 kHz !!!!!!!!
-
 #include "SC_PlugIn.h"
 
 #include "avrlib/op.h"
@@ -38,11 +36,9 @@
 
 #include <cstdio>
 
-#define COUNTMAX 6
+#define COUNTMAX 4
 
 // the original module runs at a control rate of 8000 Hz
-// if we run at 48 kHz, take ever 6th sample as a clock tick
-
 
 static InterfaceTable *ft;
 
@@ -52,11 +48,11 @@ struct MiGrids : public Unit {
     
     grids::Clock clock;
     grids::PatternGenerator pattern_generator;
-    int8_t      swing_amount;       // untested
+    int8_t      swing_amount;
     uint32_t    tap_duration;
     uint8_t     count;
     float       sr;
-    
+    uint32_t    c;     // factor for bpm calculation
 };
 
 uint8_t ticks_granularity[] = { 6, 3, 1 };
@@ -90,7 +86,7 @@ static void MiGrids_Ctor(MiGrids *unit) {
     unit->swing_amount = 0;
     unit->count = 0;
     unit->sr = SAMPLERATE;
-    
+    unit->c = ((1L<<32) * 8) / (120 * unit->sr / COUNTMAX);
 
     
     SETCALC(MiGrids_next);        // tells sc synth the name of the calculation function
@@ -129,7 +125,7 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     CONSTRAIN(bpm, 20, 511);
     
     if (bpm != clock->bpm() && !clock->locked()) {
-        clock->Update(bpm, pattern_generator->clock_resolution());
+        clock->Update_new(bpm, unit->c);
 //        std::printf("new bpm: %d\n", clock->bpm());
     }
     PatternGeneratorSettings* settings = pattern_generator->mutable_settings();
@@ -153,8 +149,6 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     uint8_t count = unit->count;
     
     for (size_t i = 0; i < inNumSamples; ++i) {
-        
-        // the original module has a SR of 8000 Hz
         
         if(count >= COUNTMAX) {
             count = 0;

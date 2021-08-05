@@ -38,6 +38,7 @@ class Clock {
     locked_ = false;
   }
   void Update(uint16_t bpm, ClockResolution resolution);
+    void Update_new(uint16_t bpm, uint32_t c);
   
   void Reset() {
     phase_ = 0;

@@ -34,5 +34,12 @@ void Clock::Update(uint16_t bpm, ClockResolution resolution) {
     phase_increment_ = (phase_increment_ << 1) + phase_increment_;
 //  }
 }
+    
+    
+    void Clock::Update_new(uint16_t bpm, uint32_t c) {
+        bpm_ = bpm;
+        phase_increment_ = bpm * c;
+        phase_increment_ = (phase_increment_ << 1) + phase_increment_;
+    }
 
 }  // namespace grids
