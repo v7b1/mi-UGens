@@ -14,7 +14,7 @@ CLASSMETHODS::
 METHOD:: ar
 
 ARGUMENT:: bpm
-bpm of internal clock (needs a fix: right now only works correctly at SR of 48kHz). Accurate only at integer bpm values  between 20 and 511.
+bpm of internal clock (float or integer bpm values between 20 and 511).
 
 ARGUMENT:: map_x
 x coordinate of drum map, or number of steps (in euclidean mode), (0..1).

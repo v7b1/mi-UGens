@@ -33,12 +33,13 @@ class Clock {
   Clock() { }
   ~Clock() { }
    
-  void Init() {
-    Update(120, CLOCK_RESOLUTION_24_PPQN);
+  void Init(float c) {
+//    Update(120, CLOCK_RESOLUTION_24_PPQN);
+      Update_f(120.f, c);   // vb
     locked_ = false;
   }
   void Update(uint16_t bpm, ClockResolution resolution);
-    void Update_new(uint16_t bpm, uint32_t c);
+    void Update_f(float bpm, float c);    // vb
   
   void Reset() {
     phase_ = 0;
@@ -68,11 +69,11 @@ class Clock {
   inline void Lock() { locked_ = true; }
   inline void Unlock() { locked_ = false; }
   inline bool locked() { return locked_; }
-  inline uint16_t bpm() { return bpm_; }
+  inline float bpm() { return bpm_; }       // vb
   
  private:
   bool locked_;
-  uint16_t bpm_;
+  float bpm_;       // vb
     uint32_t phase_;
     uint32_t phase_increment_;
     uint8_t falling_edge_;

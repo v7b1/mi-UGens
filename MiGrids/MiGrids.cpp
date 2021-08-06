@@ -52,7 +52,7 @@ struct MiGrids : public Unit {
     uint32_t    tap_duration;
     uint8_t     count;
     float       sr;
-    uint32_t    c;     // factor for bpm calculation
+    float       c;     // factor for bpm calculation
 };
 
 uint8_t ticks_granularity[] = { 6, 3, 1 };
@@ -73,21 +73,20 @@ static void MiGrids_next(MiGrids *unit, int inNumSamples);
 
 static void MiGrids_Ctor(MiGrids *unit) {
     
+    unit->sr = SAMPLERATE;
+    unit->c = ((1L<<32) * 8) / (120 * unit->sr / COUNTMAX);
     
-    unit->clock.Init();
+    unit->clock.Init(unit->c);
     unit->pattern_generator.Init();
     
     uint8_t reso = IN0(10);
     CONSTRAIN(reso, 0, 2);
     unit->pattern_generator.set_clock_resolution(reso);
-    unit->clock.Update(120, unit->pattern_generator.clock_resolution());
+//    unit->clock.Update(120, unit->pattern_generator.clock_resolution());
     unit->pattern_generator.Reset();
     
     unit->swing_amount = 0;
     unit->count = 0;
-    unit->sr = SAMPLERATE;
-    unit->c = ((1L<<32) * 8) / (120 * unit->sr / COUNTMAX);
-
     
     SETCALC(MiGrids_next);        // tells sc synth the name of the calculation function
     MiGrids_next(unit, 1);
@@ -100,7 +99,7 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
 {
     // TODO: change first input to receive external clock?
     // and add a dedicated bpm input?
-    uint16_t    bpm = IN0(0);
+    float       bpm = IN0(0);
     // use overflow to limit data range to uint8
     uint8_t     map_x = IN0(1) * 255.0f;
     uint8_t     map_y = IN0(2) * 255.0f;
@@ -112,20 +111,20 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     uint8_t     swing  = ( IN0(8) != 0.f );
     uint8_t     config  = ( IN0(9) != 0.f );
     
-    float *out1 = OUT(0);
-    float *out2 = OUT(1);
-    float *out3 = OUT(2);
-    float *out4 = OUT(3);
-    float *out5 = OUT(4);
-    float *out6 = OUT(5);
+//    float *out1 = OUT(0);
+//    float *out2 = OUT(1);
+//    float *out3 = OUT(2);
+//    float *out4 = OUT(3);
+//    float *out5 = OUT(4);
+//    float *out6 = OUT(5);
     
     grids::Clock *clock = &unit->clock;
     grids::PatternGenerator *pattern_generator = &unit->pattern_generator;
     
-    CONSTRAIN(bpm, 20, 511);
+    CONSTRAIN(bpm, 20.0f, 511.0f);
     
     if (bpm != clock->bpm() && !clock->locked()) {
-        clock->Update_new(bpm, unit->c);
+        clock->Update_f(bpm, unit->c);
 //        std::printf("new bpm: %d\n", clock->bpm());
     }
     PatternGeneratorSettings* settings = pattern_generator->mutable_settings();
@@ -185,12 +184,16 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
         // EUCLIDEAN    FALSE          RND   CLK  RST3  RST2  RST1  EUC3  EUC2  EUC1
         // EUCLIDEAN    TRUE           RND   CLK   CLK  STEP   RST  EUC3  EUC2  EUC1
         
-        out1[i] = (state & 1);
-        out2[i] = (state & 2) >> 1;
-        out3[i] = (state & 4) >> 2;
-        out4[i] = (state & 8) >> 3;
-        out5[i] = (state & 16) >> 4;
-        out6[i] = (state & 32) >> 5;
+//        out1[i] = (state & 1);
+//        out2[i] = (state & 2) >> 1;
+//        out3[i] = (state & 4) >> 2;
+//        out4[i] = (state & 8) >> 3;
+//        out5[i] = (state & 16) >> 4;
+//        out6[i] = (state & 32) >> 5;
+        
+        for(int k=0; k<6; k++) {
+            OUT(k)[i] = (state >> k) & 1;
+        }
         
         
     }
