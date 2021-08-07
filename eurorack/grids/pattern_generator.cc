@@ -164,10 +164,10 @@ void PatternGenerator::Evaluate() {
   state_ = 0;
   pulse_duration_counter_ = 0;
   
-  Random::Update();
+//  Random::Update();
   // Highest bits: clock and random bit.
-  state_ |= 0x40;
-  state_ |= Random::state() & 0x80;
+//  state_ |= 0x40;
+//  state_ |= Random::state() & 0x80;
   
   if (output_clock()) {
     state_ |= OUTPUT_BIT_CLOCK;
@@ -176,6 +176,12 @@ void PatternGenerator::Evaluate() {
   // Refresh only at step changes.
   if (pulse_ != 0) {
     return;
+  }
+  else {
+      Random::Update();
+      state_ |= Random::state() & 0x80;
+      if (!(step_ & 1))
+          state_ |= 0x40;   // or maybe only 16th?
   }
   
   if (options_.output_mode == OUTPUT_MODE_EUCLIDEAN) {

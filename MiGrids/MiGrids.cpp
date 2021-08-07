@@ -82,7 +82,6 @@ static void MiGrids_Ctor(MiGrids *unit) {
     uint8_t reso = IN0(10);
     CONSTRAIN(reso, 0, 2);
     unit->pattern_generator.set_clock_resolution(reso);
-//    unit->clock.Update(120, unit->pattern_generator.clock_resolution());
     unit->pattern_generator.Reset();
     
     unit->swing_amount = 0;
@@ -124,7 +123,7 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     CONSTRAIN(bpm, 20.0f, 511.0f);
     
     if (bpm != clock->bpm() && !clock->locked()) {
-        clock->Update_f(bpm, unit->c);
+        clock->Update_f(bpm, unit->c, unit->pattern_generator.clock_resolution());
 //        std::printf("new bpm: %d\n", clock->bpm());
     }
     PatternGeneratorSettings* settings = pattern_generator->mutable_settings();
@@ -191,7 +190,7 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
 //        out5[i] = (state & 16) >> 4;
 //        out6[i] = (state & 32) >> 5;
         
-        for(int k=0; k<6; k++) {
+        for(int k=0; k<8; k++) {
             OUT(k)[i] = (state >> k) & 1;
         }
         

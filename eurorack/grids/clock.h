@@ -35,11 +35,11 @@ class Clock {
    
   void Init(float c) {
 //    Update(120, CLOCK_RESOLUTION_24_PPQN);
-      Update_f(120.f, c);   // vb
+      Update_f(120.f, c, CLOCK_RESOLUTION_24_PPQN);   // vb
     locked_ = false;
   }
   void Update(uint16_t bpm, ClockResolution resolution);
-    void Update_f(float bpm, float c);    // vb
+    void Update_f(float bpm, float c, ClockResolution resolution);    // vb
   
   void Reset() {
     phase_ = 0;
