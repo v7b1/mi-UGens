@@ -13,8 +13,11 @@ CLASSMETHODS::
 
 METHOD:: ar
 
+ARGUMENT:: on_off
+Start/stop the sequencer (0/1).
+
 ARGUMENT:: bpm
-bpm of internal clock (float or integer bpm values between 20 and 511).
+bpm of internal clock (bpm values between 20 and 511).
 
 ARGUMENT:: map_x
 x coordinate of drum map, or number of steps (in euclidean mode), (0..1).
@@ -23,22 +26,31 @@ ARGUMENT:: map_y
 y coordinate of drum map, or number of steps (in euclidean mode), (0..1).
 
 ARGUMENT:: chaos
-choas amount, or 'swing' amount, if swing is enabled (only works with internal clock), (0..1).
+choas amount, or 'swing' amount, if swing is enabled (only works in 'drum mode' and with internal clock), (0..1).
 
-ARGUMENT:: bd_density
+ARGUMENT:: bd_dens
 density of channel 1 triggers (0..1)
 
-ARGUMENT:: sd_density
+ARGUMENT:: sd_dens
 density of channel 2 triggers (0..1)
 
-ARGUMENT:: hh_density
+ARGUMENT:: hh_dens
 density of channel 3 triggers (0..1)
+
+ARGUMENT:: clock_trig
+Trigger or Gate input from external clock source. The number of pulses per quarter note can be adjusted with the 'reso' argument, while 24 ppqn is expected by default.
+
+ARGUMENT:: reset_trig
+Trigger or Gate input resets the sequencer.
+
+ARGUMENT:: ext_clock
+Choose sequencer clock source: internal (0) or external (1).
 
 ARGUMENT:: mode
 mode of operation. 0: drum mode (default), 1: euclidean mode. When euclidean sequencer mode is enabled, the map_x, map_y and chaos params control the duration (number of steps) of the sequence; while the density params control the fill rate.
 
 ARGUMENT:: swing
-swing mode on/off (0 / 1). If swing is active, the 'chaos' param sets the swing amount.
+swing mode on/off (0/1). If swing is active, the 'chaos' param sets the swing amount. (swing only works in 'drum mode' and with internal clock).
 
 ARGUMENT:: config
 config 0/1, configuration of the 'accent' outputs (4 to 6). 0: normal, outputs 4 to 6 carry accents of the respective channels (1 to 3).  1: clock_info, output 4: global accent, output 5: clock out, 6: reset/bar
@@ -60,7 +72,7 @@ code::
 	var y = LFNoise1.kr(0.05).range(0, 1);
 	var chaos = 0.5;
 
-	var pulses = MiGrids.ar(133, x, y, chaos, 0.25, 0.25, 0.3);
+	var pulses = MiGrids.ar(1, 133, x, y, chaos, 0.25, 0.25, 0.3);
 
 	var ringdur = LFNoise1.kr(0.1).range(0, 2);
 
@@ -79,10 +91,10 @@ code::
 	var y = 0.5;
 	var swing_amount = 0.6;
 
-	var mode = 1; // swing only works in 'drumming' mode
+	var mode = 0; // swing only works in 'drumming' mode
 	var swing = 1;
 
-	var pulses = MiGrids.ar(bpm, x, y, swing_amount, 0.39, 0.25, 0.59, mode, swing);
+	var pulses = MiGrids.ar(1, bpm, x, y, swing_amount, 0.39, 0.25, 0.59, mode: mode, swing: swing);
 
 	var out = Ringz.ar( pulses[0..2], [100, 700, 1200], [1, 0.3, 0.1], 0.05);
 	Splay.ar(out);

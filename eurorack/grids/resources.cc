@@ -34,8 +34,8 @@ const char* const string_table[] = {
 
 
 
-const uint16_t* const lookup_table_table[] = {
-};
+//const uint16_t* const lookup_table_table[] = {
+//};
 
 const uint32_t lut_res_euclidean[]  = {
        0,      0,      0,      0,      0,      0,      0,      0,

@@ -50,9 +50,9 @@ struct MiGrids : public Unit {
     grids::PatternGenerator pattern_generator;
     int8_t      swing_amount;
     uint32_t    tap_duration;
-    uint8_t     count;
     float       sr;
     float       c;     // factor for bpm calculation
+    bool        previous_clock, previous_reset;
 };
 
 uint8_t ticks_granularity[] = { 6, 3, 1 };
@@ -79,13 +79,13 @@ static void MiGrids_Ctor(MiGrids *unit) {
     unit->clock.Init(unit->c);
     unit->pattern_generator.Init();
     
-    uint8_t reso = IN0(10);
+    uint8_t reso = IN0(14);
     CONSTRAIN(reso, 0, 2);
     unit->pattern_generator.set_clock_resolution(reso);
     unit->pattern_generator.Reset();
     
     unit->swing_amount = 0;
-    unit->count = 0;
+    unit->previous_clock = unit->previous_reset = false;
     
     SETCALC(MiGrids_next);        // tells sc synth the name of the calculation function
     MiGrids_next(unit, 1);
@@ -98,24 +98,29 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
 {
     // TODO: change first input to receive external clock?
     // and add a dedicated bpm input?
-    float       bpm = IN0(0);
+    bool        on_off = ( IN0(0) != 0.f );
+    float       bpm = IN0(1);
     // use overflow to limit data range to uint8
-    uint8_t     map_x = IN0(1) * 255.0f;
-    uint8_t     map_y = IN0(2) * 255.0f;
-    uint8_t     randomness = IN0(3) * 255.0f;
-    uint8_t     bd_density = IN0(4) * 255.0f;
-    uint8_t     sd_density = IN0(5) * 255.0f;
-    uint8_t     hh_density = IN0(6) * 255.0f;
-    uint8_t     mode    = ( IN0(7) == 0.f );
-    uint8_t     swing  = ( IN0(8) != 0.f );
-    uint8_t     config  = ( IN0(9) != 0.f );
+    uint8_t     map_x = IN0(2) * 255.0f;
+    uint8_t     map_y = IN0(3) * 255.0f;
+    uint8_t     randomness = IN0(4) * 255.0f;
+    uint8_t     bd_density = IN0(5) * 255.0f;
+    uint8_t     sd_density = IN0(6) * 255.0f;
+    uint8_t     hh_density = IN0(7) * 255.0f;
+    float       *clock_trig  = IN(8);
+    float       *reset_trig  = IN(9);
+    bool        use_ext_clock  = ( IN0(10) != 0.f );
+    uint8_t     mode    = ( IN0(11) == 0.f );
+    uint8_t     swing  = ( IN0(12) != 0.f );
+    uint8_t     config  = ( IN0(13) != 0.f );
+
     
-//    float *out1 = OUT(0);
-//    float *out2 = OUT(1);
-//    float *out3 = OUT(2);
-//    float *out4 = OUT(3);
-//    float *out5 = OUT(4);
-//    float *out6 = OUT(5);
+    if (!on_off) {
+        for(int k=0; k<8; ++k) {
+            memset(OUT(k), 0, inNumSamples * sizeof(float));
+        }
+        return;
+    }
     
     grids::Clock *clock = &unit->clock;
     grids::PatternGenerator *pattern_generator = &unit->pattern_generator;
@@ -137,23 +142,37 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
     pattern_generator->set_output_mode(mode);
     pattern_generator->set_swing(swing);
     pattern_generator->set_output_clock(config);
-
-//    if(INRATE(1) == calc_FullRate) {
-//        for (size_t i = 0; i < inNumSamples; ++i) {
-//            ;
-//        }
-//    }
     
-    uint8_t count = unit->count;
+    uint8_t increment = ticks_granularity[pattern_generator->clock_resolution()];
+    bool    previous_clock = unit->previous_clock;
+    bool    previous_reset = unit->previous_reset;
     
-    for (size_t i = 0; i < inNumSamples; ++i) {
+    
+    for (size_t i = 0; i < inNumSamples; i+=COUNTMAX) {
         
-        if(count >= COUNTMAX) {
-            count = 0;
-//          static uint8_t previous_inputs;
-//          uint8_t inputs_value = ~inputs.Read();
-            uint8_t num_ticks = 0;
-            uint8_t increment = ticks_granularity[pattern_generator->clock_resolution()];
+        uint8_t num_ticks = 0;
+        
+        // external clock input
+        if(use_ext_clock) {
+            
+            float clock_sum = 0.f;
+            if (INRATE(8) == calc_FullRate) {
+                for(int k=i; k<(i+COUNTMAX); ++k)
+                    clock_sum += clock_trig[k];
+                
+                bool clock_in = clock_sum > 0.1f;
+                if (clock_in && !previous_clock) {
+                    num_ticks = increment;
+                }
+                else if (!clock_in && previous_clock) {
+                    pattern_generator->ClockFallingEdge();
+                    clock_sum = 0.f;
+                }
+                previous_clock = clock_in;
+            }
+            
+        }
+        else {
             clock->Tick();
             clock->Wrap(unit->swing_amount);
             if (clock->raising_edge()) {
@@ -162,42 +181,43 @@ void MiGrids_next( MiGrids *unit, int inNumSamples )
             if (clock->past_falling_edge()) {
                 pattern_generator->ClockFallingEdge();
             }
-            
-            if (num_ticks) {
-                unit->swing_amount = pattern_generator->swing_amount();
-                pattern_generator->TickClock(num_ticks);
-            }
-            
-            pattern_generator->IncrementPulseCounter();
-        
         }
-        count++;
+        
+        // handle reset input
+        if (INRATE(9) == calc_FullRate) {
+            float reset_sum = 0.f;
+            for(int k=i; k<(i+COUNTMAX); ++k)
+                reset_sum += reset_trig[k];
+            bool reset_in = (reset_sum > 0.1f);
+            if (reset_in && !previous_reset)
+                pattern_generator->Reset();
+
+            previous_reset = reset_in;
+        }
+        
+        if (num_ticks) {
+            unit->swing_amount = pattern_generator->swing_amount();
+            pattern_generator->TickClock(num_ticks);
+        }
+        
+        pattern_generator->IncrementPulseCounter();
+        
         
         uint8_t state = pattern_generator->state();
         
         // decode 'state' into output triggers/gates
         
-        // OUTPUT MODE  OUTPUT CLOCK  BIT7  BIT6  BIT5  BIT4  BIT3  BIT2  BIT1  BIT0
-        // DRUMS        FALSE          RND   CLK  HHAC  SDAC  BDAC    HH    SD    BD
-        // DRUMS        TRUE           RND   CLK   CLK   BAR   ACC    HH    SD    BD
-        // EUCLIDEAN    FALSE          RND   CLK  RST3  RST2  RST1  EUC3  EUC2  EUC1
-        // EUCLIDEAN    TRUE           RND   CLK   CLK  STEP   RST  EUC3  EUC2  EUC1
-        
-//        out1[i] = (state & 1);
-//        out2[i] = (state & 2) >> 1;
-//        out3[i] = (state & 4) >> 2;
-//        out4[i] = (state & 8) >> 3;
-//        out5[i] = (state & 16) >> 4;
-//        out6[i] = (state & 32) >> 5;
-        
         for(int k=0; k<8; k++) {
-            OUT(k)[i] = (state >> k) & 1;
+//            OUT(k)[i] = (state >> k) & 1;
+            float val = (state >> k) & 1;
+            std::fill_n(OUT(k)+i, COUNTMAX, val);
         }
         
         
     }
     
-    unit->count = count;
+    unit->previous_clock = previous_clock;
+    unit->previous_reset = previous_reset;
     
 }
 
