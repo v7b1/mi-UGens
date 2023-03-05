@@ -5,8 +5,10 @@ related:: Classes/Osc, Classes/MiBraids, Classes/MiRings, Classes/MiMu
 
 DESCRIPTION::
 A macro oscillator offering a multitude of synthesis methods.
+This is a port of the Plaits eurorack module by link::https://mutable-instruments.net/modules/plaits::. Original code by Émilie Gillet
 
-note:: This is a port of the Plaits eurorack module by link::https://mutable-instruments.net/modules/plaits::. Original code by Émilie Gillet::
+Note:: For a full description please consult the original manual link::https://mutable-instruments.net/modules/plaits/manual::.
+::
 
 
 CLASSMETHODS::

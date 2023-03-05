@@ -37,7 +37,36 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-    // TODO: add more chords! vb
+    
+#ifdef JON_CHORDS
+    
+    // Alternative chord table by Jon Butler jonbutler88@gmail.com
+    const double chords[kChordNumChords][kChordNumNotes] = {
+        // Fixed Intervals
+        { 0.00, 0.01, 11.99, 12.00 },  // Octave
+        { 0.00, 7.01,  7.00, 12.00 },  // Fifth
+        // Minor
+        { 0.00, 3.00,  7.00, 12.00 },  // Minor
+        { 0.00, 3.00,  7.00, 10.00 },  // Minor 7th
+        { 0.00, 3.00, 10.00, 14.00 },  // Minor 9th
+        { 0.00, 3.00, 10.00, 17.00 },  // Minor 11th
+        // Major
+        { 0.00, 4.00,  7.00, 12.00 },  // Major
+        { 0.00, 4.00,  7.00, 11.00 },  // Major 7th
+        { 0.00, 4.00, 11.00, 14.00 },  // Major 9th
+        // Colour Chords
+        { 0.00, 5.00,  7.00, 12.00 },  // Sus4
+        { 0.00, 2.00,  9.00, 16.00 },  // 69
+        { 0.00, 4.00,  7.00,  9.00 },  // 6th
+        { 0.00, 7.00, 16.00, 23.00 },  // 10th (Spread maj7)
+        { 0.00, 4.00,  7.00, 10.00 },  // Dominant 7th
+        { 0.00, 7.00, 10.00, 13.00 },  // Dominant 7th (b9)
+        { 0.00, 3.00,  6.00, 10.00 },  // Half Diminished
+        { 0.00, 3.00,  6.00,  9.00 },  // Fully Diminished
+    };
+    
+#else
+    
 const float chords[kChordNumChords][kChordNumNotes] = {
   { 0.00f, 0.01f, 11.99f, 12.00f },  // OCT
   { 0.00f, 7.01f,  7.00f, 12.00f },  // 5
@@ -51,6 +80,8 @@ const float chords[kChordNumChords][kChordNumNotes] = {
   { 0.00f, 4.00f,  7.00f, 11.00f },  // M7
   { 0.00f, 4.00f,  7.00f, 12.00f },  // M
 };
+    
+    #endif  // JON_CHORDS
 
 void ChordEngine::Init(BufferAllocator* allocator) {
   for (int i = 0; i < kChordNumVoices; ++i) {
@@ -61,21 +92,16 @@ void ChordEngine::Init(BufferAllocator* allocator) {
   morph_lp_ = 0.0f;
   timbre_lp_ = 0.0f;
   
-  ratios_ = allocator->Allocate<float>(kChordNumChords * kChordNumVoices);
+  ratios_ = allocator->Allocate<float>(kChordNumChords * kChordNumNotes);
 }
 
-void ChordEngine::Reset() {
-  for (int i = 0; i < kChordNumChords; ++i) {
-      // vb, this seems to be an oversight:
-//    for (int j = 0; j < kChordNumVoices; ++j) {
-//      ratios_[i * kChordNumVoices + j] = SemitonesToRatio(chords[i][j]);
-//    }
-      // should probably be:
-      for (int j = 0; j < kChordNumNotes; ++j) {   
-          ratios_[i * kChordNumVoices + j] = SemitonesToRatio(chords[i][j]);
-      }
-  }
-}
+    void ChordEngine::Reset() {
+        for (int i = 0; i < kChordNumChords; ++i) {
+            for (int j = 0; j < kChordNumNotes; ++j) {
+                ratios_[i * kChordNumNotes + j] = SemitonesToRatio(chords[i][j]);
+            }
+        }
+    }
 
 const float fade_point[kChordNumVoices] = {
   0.55f, 0.47f, 0.49f, 0.51f, 0.53f
@@ -111,7 +137,7 @@ int ChordEngine::ComputeChordInversion(
     float inversion,
     float* ratios,
     float* amplitudes) {
-  const float* base_ratio = &ratios_[chord_index * kChordNumVoices];
+  const float* base_ratio = &ratios_[chord_index * kChordNumNotes];
   inversion = inversion * float(kChordNumNotes * 5);
 
   MAKE_INTEGRAL_FRACTIONAL(inversion);
