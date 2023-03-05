@@ -1,5 +1,6 @@
-cmake_minimum_required (VERSION 3.8)
-project (MiMu)
+
+set(project_name "MiMu")
+project (${project_name})
 
 include_directories(${SC_PATH}/include/plugin_interface)
 include_directories(${SC_PATH}/include/common)
@@ -15,3 +16,5 @@ endif()
 add_library(MiMu MODULE
         MiMu.cpp
 )
+
+install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})

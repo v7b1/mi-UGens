@@ -1,8 +1,9 @@
-cmake_minimum_required (VERSION 3.8)
-project (MiPlaits)
+
+set(project_name "MiPlaits")
+project (${project_name})
 
 # paths to our sources
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
+set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
 set(MI_PATH ${MUTABLE_PATH}/plaits)
 
@@ -142,3 +143,7 @@ source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Accelerate")
 endif()
+
+install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+
