@@ -1,8 +1,10 @@
 cmake_minimum_required (VERSION 3.8)
-project (MiGrids)
+
+set(project_name "MiGrids")
+project (${project_name})
 
 # paths to our sources
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
+set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
 set(AVRLIB_PATH ${MUTABLE_PATH}/avrlib)
 set(MI_PATH ${MUTABLE_PATH}/grids)
 
@@ -45,3 +47,5 @@ if(APPLE)
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${AVRLIB_SOURCES} ${MI_SOURCES})
 endif()
+
+install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})

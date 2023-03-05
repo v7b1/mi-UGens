@@ -1,12 +1,13 @@
 TITLE:: MiGrids
 summary:: topographic drum sequencer
-categories:: Undocumented classes, UGens>Undocumented
-related:: Classes/SomeRelatedClass
+categories:: UGens>Drums
+related:: Classes/Ringz
 
 DESCRIPTION::
-MiGrids is a clone of the 'Grids' eurorack module by link::https://mutable-instruments.net/modules/grids::. It's a 3-channel, algorithmic, rhythmic pattern generator based on data and models extracted from actual drum loops. Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master::.
+MiGrids is a 3-channel, algorithmic, rhythmic pattern generator based on data and models extracted from actual drum loops. It is a clone of the 'Grids' eurorack module by link::https://mutable-instruments.net/modules/grids::.  Original code by Émilie Gillet, link::https://github.com/pichenettes/eurorack/tree/master::.
 
-Please refer to the original Grids manual for indepth information: link::https://mutable-instruments.net/modules/grids/manual/::.
+Note:: Please refer to the original Grids manual for indepth information: link::https://mutable-instruments.net/modules/grids/manual/::.
+::
 
 
 CLASSMETHODS::
@@ -26,16 +27,16 @@ ARGUMENT:: map_y
 y coordinate of drum map, or number of steps (in euclidean mode), (0..1).
 
 ARGUMENT:: chaos
-choas amount, or 'swing' amount, if swing is enabled (only works in 'drum mode' and with internal clock), (0..1).
+choas amount, or 'swing' amount, if swing is enabled (only works in 'drum mode' and with internal clock), or number of steps (in euclidean mode), (0..1).
 
 ARGUMENT:: bd_dens
-density of channel 1 triggers (0..1)
+density of channel 1 triggers, or fill rate (in euclidean mode), (0..1)
 
 ARGUMENT:: sd_dens
-density of channel 2 triggers (0..1)
+density of channel 2 triggers, or fill rate (in euclidean mode), (0..1)
 
 ARGUMENT:: hh_dens
-density of channel 3 triggers (0..1)
+density of channel 3 triggers, or fill rate (in euclidean mode), (0..1)
 
 ARGUMENT:: clock_trig
 Trigger or Gate input from external clock source. The number of pulses per quarter note can be adjusted with the 'reso' argument, while 24 ppqn is expected by default.
@@ -47,7 +48,7 @@ ARGUMENT:: ext_clock
 Choose sequencer clock source: internal (0) or external (1).
 
 ARGUMENT:: mode
-mode of operation. 0: drum mode (default), 1: euclidean mode. When euclidean sequencer mode is enabled, the map_x, map_y and chaos params control the duration (number of steps) of the sequence; while the density params control the fill rate.
+mode of operation. 0: drum mode (default), 1: euclidean mode. When euclidean sequencer mode is enabled, the map_x, map_y and chaos params control the length (number of steps) of the sequence; while the density params control the fill rate.
 
 ARGUMENT:: swing
 swing mode on/off (0/1). If swing is active, the 'chaos' param sets the swing amount. (swing only works in 'drum mode' and with internal clock).
@@ -98,6 +99,62 @@ code::
 
 	var out = Ringz.ar( pulses[0..2], [100, 700, 1200], [1, 0.3, 0.1], 0.05);
 	Splay.ar(out);
+
+}.play;
+)
+
+// external clock
+(
+{
+	var bpm = 120;
+	var x = 0.5;
+	var y = 0.5;
+	var chaos = 0.5;
+
+	var mode = 0;     // drum mode
+	var config = 1;
+
+	// bpm to freq
+	var fclock = bpm / 60.0;
+	var tick = Impulse.ar(fclock) * 0.8;
+	var trig = Impulse.ar(fclock * 24); // external clock with 24 PPQN
+
+	var pulses = MiGrids.ar(1, 100, x, y, chaos, 0.48, 0.27, 0.6, clock_trig: trig, ext_clock: 1, config: config);
+
+	var ringdur = 0.5;
+
+	var out = Ringz.ar( pulses[0..2], [100, 700, 800], [1, 0.5, 0.2], 0.05);
+	var out2 = Ringz.ar( pulses[3..5], [200, 750, 2200], 0.2, 0.05);
+
+	// out2[2] carries reset trigger (high pitched tone)
+	Splay.ar(out+tick+out2[2]);
+}.play;
+)
+
+
+// euclidean mode
+(
+{
+	var mode = 1;      // euclidean mode
+
+	var len1 = 0.4;    // length1 -- ((f * 255.0) >> 3) + 1
+	var len2 = 0.43;   // length2
+	var len3 = 0.5;    // length3
+
+	var fill1 = 0.2;
+	var fill2 = 0.27;
+	var fill3 = 0.6;
+
+	var pulses = MiGrids.ar(1, 120, len1, len2, len3, fill1, fill2, fill3, mode: mode);
+
+	var out = Ringz.ar( pulses[0..2],
+		[300, 700, 1500],
+		[1, 0.11, 0.07],
+		0.05);
+
+	var tick = Ringz.ar(pulses[6], 4000, 0.01, 0.03);
+
+	Splay.ar(out) + tick;
 
 }.play;
 )
