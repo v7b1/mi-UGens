@@ -2,12 +2,6 @@
 set(project_name "MiBraids")
 project (${project_name})
 
-# this doesn't seem to work... libsamplerate will not be compiled
-# add libsamplerate as a "sub-project"
-#option(LIBSAMPLERATE_EXAMPLES "libsamplerate: build examples" OFF) 
-#option(BUILD_TESTING "libsamplerate: run testing" OFF)
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate ${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/build)
-
 
 # paths to our sources
 set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
