@@ -45,4 +45,4 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiWarps)
 
 
 # Install sc classes and help files
-install(DIRECTORY "sc/classes" "sc/HelpSource" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(DIRECTORY "sc/Classes" "sc/HelpSource" DESTINATION "${CMAKE_INSTALL_PREFIX}")
