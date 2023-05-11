@@ -3,7 +3,7 @@
 # Usage: build.sh <SUPERCOLLIDER SOURCE>
 #
 SC_SRC=$1
-FOLDERS=(MiBraids MiClouds MiElements MiMu MiOmi MiPlaits MiRings MiRipples MiTides MiVerb MiWarps)
+FOLDERS=(MiBraids MiClouds MiElements MiGrids MiMu MiOmi MiPlaits MiRings MiRipples MiTides MiVerb MiWarps)
 MI_UGENS=build/mi-UGens
 
 mkdir -p $MI_UGENS
