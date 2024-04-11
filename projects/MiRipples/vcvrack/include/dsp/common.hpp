@@ -1,4 +1,5 @@
 #pragma once
+#include <common.hpp>
 #include <math.hpp>
 #include <simd/functions.hpp>
 
@@ -6,7 +7,7 @@
 namespace rack {
 
 
-/** Digital signal processing routines
+/** Digital signal processing routines and classes
 */
 namespace dsp {
 

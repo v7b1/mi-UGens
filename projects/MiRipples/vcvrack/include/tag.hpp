@@ -1,9 +1,11 @@
 #pragma once
-#include <common.hpp>
 #include <vector>
+
+#include <common.hpp>
 
 
 namespace rack {
+/** Tags describing the function(s) of modules */
 namespace tag {
 
 
@@ -22,6 +24,9 @@ Case-insensitive.
 Returns -1 if not found.
 */
 int findId(const std::string& tag);
+
+/** Returns the main tag name by tag ID. */
+std::string getTag(int tagId);
 
 
 } // namespace tag

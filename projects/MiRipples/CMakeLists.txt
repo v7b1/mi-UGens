@@ -7,7 +7,7 @@ include_directories(${SC_PATH}/include/plugin_interface)
 include_directories(${SC_PATH}/include/common)
 include_directories(${SC_PATH}/external_libraries/libsndfile/)
 
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../mutableSources32")
+#set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../mutableSources32")
 set(VCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack")
 set(VCV_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack/include")
 
@@ -23,7 +23,7 @@ set(VCV_SOURCES
 	${VCV_PATH}/Ripples/aafilter.hpp
 	${VCV_PATH}/Ripples/ripples.hpp
 	${VCV_PATH}/Ripples/sos.hpp
-	${VCV_PATH}/src/random.cpp
+	#${VCV_PATH}/src/random.cpp
 )
 
 
@@ -42,6 +42,9 @@ add_library(
 include_directories(
         ${VCV_PATH}
         ${VCV_INCLUDE}
+	if (CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
+            set(VCV_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack/dep")
+    	endif()
 )
 
 if(APPLE)

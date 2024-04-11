@@ -1,6 +1,7 @@
 #pragma once
-#include <dsp/common.hpp>
 #include <pffft.h>
+
+#include <dsp/common.hpp>
 
 
 namespace rack {
@@ -27,6 +28,7 @@ struct RealFFT {
 
 	/** Performs the real FFT.
 	Input and output must be aligned using the above align*() functions.
+	Input and output arrays may overlap.
 	Input is `length` elements. Output is `2*length` elements.
 	Output is arbitrarily ordered for performance reasons.
 	However, this ordering is consistent, so element-wise multiplication with line up with other results, and the inverse FFT will return a correctly ordered result.

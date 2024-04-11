@@ -196,7 +196,8 @@ public:
         int oversampling_factor = aa_filter_.GetOversamplingFactor();
         float timestep = sample_time_ / oversampling_factor;
         // Add noise to input to bootstrap self-oscillation
-        float input = frame.input + 1e-6 * (random::uniform() - 0.5f);
+        // vb: somehow the call to random doesn't work... let's get rid of it for now
+        float input = frame.input; // + 1e-6 * (random::uniform() - 0.5f);
         auto inputs = simd::float_4(input, v_oct, i_reso, i_vca);
         inputs *= oversampling_factor;
         simd::float_4 outputs;
@@ -260,7 +261,6 @@ protected:
         simd::float_4 rad_per_s = -std::exp2f(v_oct) / kFilterCellRC;
 
         // Emulate the filter core
-        
         cell_voltage_ = StepRK2(timestep, cell_voltage_, [&](simd::float_4 vout)
         {
             // vout contains the initial cell voltages (v0, v1 v2, v3)

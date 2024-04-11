@@ -23,6 +23,7 @@ struct MidiGenerator {
 	bool start;
 	bool stop;
 	bool cont;
+	int64_t frame = -1;
 
 	MidiGenerator() {
 		reset();
@@ -55,6 +56,7 @@ struct MidiGenerator {
 			m.setStatus(0x8);
 			m.setNote(note);
 			m.setValue(0);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 	}
@@ -74,6 +76,7 @@ struct MidiGenerator {
 			m.setStatus(0x8);
 			m.setNote(notes[c]);
 			m.setValue(vels[c]);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 		if (changedNote || enabledGate) {
@@ -82,6 +85,7 @@ struct MidiGenerator {
 			m.setStatus(0x9);
 			m.setNote(note);
 			m.setValue(vels[c]);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 		notes[c] = note;
@@ -97,6 +101,7 @@ struct MidiGenerator {
 		m.setStatus(0xa);
 		m.setNote(notes[c]);
 		m.setValue(val);
+		m.setFrame(frame);
 		onMessage(m);
 	}
 
@@ -109,6 +114,7 @@ struct MidiGenerator {
 		m.setSize(2);
 		m.setStatus(0xd);
 		m.setNote(val);
+		m.setFrame(frame);
 		onMessage(m);
 	}
 
@@ -121,6 +127,7 @@ struct MidiGenerator {
 		m.setStatus(0xb);
 		m.setNote(id);
 		m.setValue(cc);
+		m.setFrame(frame);
 		onMessage(m);
 	}
 
@@ -153,6 +160,7 @@ struct MidiGenerator {
 		m.setStatus(0xe);
 		m.setNote(pw & 0x7f);
 		m.setValue((pw >> 7) & 0x7f);
+		m.setFrame(frame);
 		onMessage(m);
 	}
 
@@ -166,6 +174,7 @@ struct MidiGenerator {
 			m.setSize(1);
 			m.setStatus(0xf);
 			m.setChannel(0x8);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 	}
@@ -180,6 +189,7 @@ struct MidiGenerator {
 			m.setSize(1);
 			m.setStatus(0xf);
 			m.setChannel(0xa);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 	}
@@ -194,6 +204,7 @@ struct MidiGenerator {
 			m.setSize(1);
 			m.setStatus(0xf);
 			m.setChannel(0xb);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 	}
@@ -208,11 +219,16 @@ struct MidiGenerator {
 			m.setSize(1);
 			m.setStatus(0xf);
 			m.setChannel(0xc);
+			m.setFrame(frame);
 			onMessage(m);
 		}
 	}
 
-	virtual void onMessage(midi::Message message) {}
+	void setFrame(int64_t frame) {
+		this->frame = frame;
+	}
+
+	virtual void onMessage(const midi::Message& message) {}
 };
 
 

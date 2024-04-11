@@ -1,14 +1,12 @@
 #pragma once
-#include <common.hpp>
 #include <complex>
 #include <algorithm> // for std::min, max
 
+#include <common.hpp>
+
 
 namespace rack {
-
-
-/** Supplemental `<cmath>` functions and types
-*/
+/** Extends `<cmath>` with extra functions and types */
 namespace math {
 
 
@@ -105,18 +103,24 @@ T sgn(T x) {
 /** Limits `x` between `a` and `b`.
 If `b < a`, returns a.
 */
-inline float clamp(float x, float a, float b) {
+inline float clamp(float x, float a = 0.f, float b = 1.f) {
 	return std::fmax(std::fmin(x, b), a);
 }
 
 /** Limits `x` between `a` and `b`.
 If `b < a`, switches the two values.
 */
-inline float clampSafe(float x, float a, float b) {
+inline float clampSafe(float x, float a = 0.f, float b = 1.f) {
 	return (a <= b) ? clamp(x, a, b) : clamp(x, b, a);
 }
 
 /** Converts -0.f to 0.f. Leaves all other values unchanged. */
+#if defined __clang__
+// Clang doesn't support disabling individual optimizations, just everything.
+__attribute__((optnone))
+#else
+__attribute__((optimize("signed-zeros")))
+#endif
 inline float normalizeZero(float x) {
 	return x + 0.f;
 }
@@ -142,10 +146,14 @@ inline float chop(float x, float epsilon = 1e-6f) {
 	return std::fabs(x) <= epsilon ? 0.f : x;
 }
 
+/** Rescales `x` from the range `[xMin, xMax]` to `[yMin, yMax]`.
+*/
 inline float rescale(float x, float xMin, float xMax, float yMin, float yMax) {
 	return yMin + (x - xMin) / (xMax - xMin) * (yMax - yMin);
 }
 
+/** Linearly interpolates between `a` and `b`, from `p = 0` to `p = 1`.
+*/
 inline float crossfade(float a, float b, float p) {
 	return a + (b - a) * p;
 }
@@ -176,13 +184,22 @@ inline void complexMult(float ar, float ai, float br, float bi, float* cr, float
 
 struct Rect;
 
+/** 2-dimensional vector of floats, representing a point on the plane for graphics.
+*/
 struct Vec {
 	float x = 0.f;
 	float y = 0.f;
 
 	Vec() {}
+	Vec(float xy) : x(xy), y(xy) {}
 	Vec(float x, float y) : x(x), y(y) {}
 
+	float& operator[](int i) {
+		return (i == 0) ? x : y;
+	}
+	const float& operator[](int i) const {
+		return (i == 0) ? x : y;
+	}
 	/** Negates the vector.
 	Equivalent to a reflection across the `y = -x` line.
 	*/
@@ -222,6 +239,9 @@ struct Vec {
 	float square() const {
 		return x * x + y * y;
 	}
+	float area() const {
+		return x * y;
+	}
 	/** Rotates counterclockwise in radians. */
 	Vec rotate(float angle) {
 		float sin = std::sin(angle);
@@ -252,7 +272,7 @@ struct Vec {
 	Vec ceil() const {
 		return Vec(std::ceil(x), std::ceil(y));
 	}
-	bool isEqual(Vec b) const {
+	bool equals(Vec b) const {
 		return x == b.x && y == b.y;
 	}
 	bool isZero() const {
@@ -266,45 +286,85 @@ struct Vec {
 	Vec crossfade(Vec b, float p) {
 		return this->plus(b.minus(*this).mult(p));
 	}
+
+	// Method aliases
+	bool isEqual(Vec b) const {
+		return equals(b);
+	}
 };
 
 
+/** 2-dimensional rectangle for graphics.
+Mathematically, Rects include points on its left/top edge but *not* its right/bottom edge.
+The infinite Rect (equal to the entire plane) is defined using pos=-inf and size=inf.
+*/
 struct Rect {
 	Vec pos;
 	Vec size;
 
 	Rect() {}
 	Rect(Vec pos, Vec size) : pos(pos), size(size) {}
-	Rect(float posX, float posY, float sizeX, float sizeY) : pos(math::Vec(posX, posY)), size(math::Vec(sizeX, sizeY)) {}
-	/** Constructs a Rect from the upper-left position `a` and lower-right pos `b`. */
+	Rect(float posX, float posY, float sizeX, float sizeY) : pos(Vec(posX, posY)), size(Vec(sizeX, sizeY)) {}
+	/** Constructs a Rect from a top-left and bottom-right vector.
+	*/
 	static Rect fromMinMax(Vec a, Vec b) {
 		return Rect(a, b.minus(a));
 	}
+	/** Constructs a Rect from any two opposite corners.
+	*/
+	static Rect fromCorners(Vec a, Vec b) {
+		return fromMinMax(a.min(b), a.max(b));
+	}
+	/** Returns the infinite Rect. */
+	static Rect inf() {
+		return Rect(Vec(-INFINITY, -INFINITY), Vec(INFINITY, INFINITY));
+	}
 
-	/** Returns whether this Rect contains an entire point, inclusive on the top/left, non-inclusive on the bottom/right. */
-	bool isContaining(Vec v) const {
-		return pos.x <= v.x && v.x < pos.x + size.x
-		       && pos.y <= v.y && v.y < pos.y + size.y;
+	/** Returns whether this Rect contains a point, inclusive on the left/top, exclusive on the right/bottom.
+	Correctly handles infinite Rects.
+	*/
+	bool contains(Vec v) const {
+		return (pos.x <= v.x) && (size.x == INFINITY || v.x < pos.x + size.x)
+		    && (pos.y <= v.y) && (size.y == INFINITY || v.y < pos.y + size.y);
 	}
-	/** Returns whether this Rect contains an entire Rect. */
-	bool isContaining(Rect r) const {
-		return pos.x <= r.pos.x && r.pos.x + r.size.x <= pos.x + size.x
-		       && pos.y <= r.pos.y && r.pos.y + r.size.y <= pos.y + size.y;
+	/** Returns whether this Rect contains (is a superset of) a Rect.
+	Correctly handles infinite Rects.
+	*/
+	bool contains(Rect r) const {
+		return (pos.x <= r.pos.x) && (r.pos.x - size.x <= pos.x - r.size.x)
+		    && (pos.y <= r.pos.y) && (r.pos.y - size.y <= pos.y - r.size.y);
 	}
-	/** Returns whether this Rect overlaps with another Rect. */
-	bool isIntersecting(Rect r) const {
-		return (pos.x + size.x > r.pos.x && r.pos.x + r.size.x > pos.x)
-		       && (pos.y + size.y > r.pos.y && r.pos.y + r.size.y > pos.y);
+	/** Returns whether this Rect overlaps with another Rect.
+	Correctly handles infinite Rects.
+	*/
+	bool intersects(Rect r) const {
+		return (r.size.x == INFINITY || pos.x < r.pos.x + r.size.x) && (size.x == INFINITY || r.pos.x < pos.x + size.x)
+		    && (r.size.y == INFINITY || pos.y < r.pos.y + r.size.y) && (size.y == INFINITY || r.pos.y < pos.y + size.y);
 	}
-	bool isEqual(Rect r) const {
-		return pos.isEqual(r.pos) && size.isEqual(r.size);
+	bool equals(Rect r) const {
+		return pos.equals(r.pos) && size.equals(r.size);
+	}
+	float getLeft() const {
+		return pos.x;
 	}
 	float getRight() const {
-		return pos.x + size.x;
+		return (size.x == INFINITY) ? INFINITY : (pos.x + size.x);
+	}
+	float getTop() const {
+		return pos.y;
 	}
 	float getBottom() const {
-		return pos.y + size.y;
+		return (size.y == INFINITY) ? INFINITY : (pos.y + size.y);
 	}
+	float getWidth() const {
+		return size.x;
+	}
+	float getHeight() const {
+		return size.y;
+	}
+	/** Returns the center point of the rectangle.
+	Returns a NaN coordinate if pos=-inf and size=inf.
+	*/
 	Vec getCenter() const {
 		return pos.plus(size.mult(0.5f));
 	}
@@ -312,13 +372,13 @@ struct Rect {
 		return pos;
 	}
 	Vec getTopRight() const {
-		return pos.plus(Vec(size.x, 0.f));
+		return Vec(getRight(), getTop());
 	}
 	Vec getBottomLeft() const {
-		return pos.plus(Vec(0.f, size.y));
+		return Vec(getLeft(), getBottom());
 	}
 	Vec getBottomRight() const {
-		return pos.plus(size);
+		return Vec(getRight(), getBottom());
 	}
 	/** Clamps the edges of the rectangle to fit within a bound. */
 	Rect clamp(Rect bound) const {
@@ -359,38 +419,113 @@ struct Rect {
 	Rect zeroPos() const {
 		return Rect(Vec(), size);
 	}
-	/** Expands each corner.
-	Use a negative delta to shrink.
-	*/
+	/** Expands each corner. */
 	Rect grow(Vec delta) const {
 		Rect r;
 		r.pos = pos.minus(delta);
 		r.size = size.plus(delta.mult(2.f));
 		return r;
 	}
+	/** Contracts each corner. */
+	Rect shrink(Vec delta) const {
+		Rect r;
+		r.pos = pos.plus(delta);
+		r.size = size.minus(delta.mult(2.f));
+		return r;
+	}
+	/** Returns `pos + size * p` */
+	Vec interpolate(Vec p) {
+		return pos.plus(size.mult(p));
+	}
 
-	DEPRECATED bool contains(Vec v) const {
-		return isContaining(v);
+	// Method aliases
+	bool isContaining(Vec v) const {
+		return contains(v);
 	}
-	DEPRECATED bool contains(Rect r) const {
-		return isContaining(r);
+	bool isIntersecting(Rect r) const {
+		return intersects(r);
 	}
-	DEPRECATED bool intersects(Rect r) const {
-		return isIntersecting(r);
+	bool isEqual(Rect r) const {
+		return equals(r);
 	}
 };
 
 
 inline Vec Vec::clamp(Rect bound) const {
 	return Vec(
-	         math::clamp(x, bound.pos.x, bound.pos.x + bound.size.x),
-	         math::clamp(y, bound.pos.y, bound.pos.y + bound.size.y));
+		math::clamp(x, bound.pos.x, bound.pos.x + bound.size.x),
+		math::clamp(y, bound.pos.y, bound.pos.y + bound.size.y)
+	);
 }
 
 inline Vec Vec::clampSafe(Rect bound) const {
 	return Vec(
-	         math::clampSafe(x, bound.pos.x, bound.pos.x + bound.size.x),
-	         math::clampSafe(y, bound.pos.y, bound.pos.y + bound.size.y));
+		math::clampSafe(x, bound.pos.x, bound.pos.x + bound.size.x),
+		math::clampSafe(y, bound.pos.y, bound.pos.y + bound.size.y)
+	);
+}
+
+
+// Operator overloads for Vec
+inline Vec operator+(const Vec& a) {
+	return a;
+}
+inline Vec operator-(const Vec& a) {
+	return a.neg();
+}
+inline Vec operator+(const Vec& a, const Vec& b) {
+	return a.plus(b);
+}
+inline Vec operator-(const Vec& a, const Vec& b) {
+	return a.minus(b);
+}
+inline Vec operator*(const Vec& a, const Vec& b) {
+	return a.mult(b);
+}
+inline Vec operator*(const Vec& a, const float& b) {
+	return a.mult(b);
+}
+inline Vec operator*(const float& a, const Vec& b) {
+	return b.mult(a);
+}
+inline Vec operator/(const Vec& a, const Vec& b) {
+	return a.div(b);
+}
+inline Vec operator/(const Vec& a, const float& b) {
+	return a.div(b);
+}
+inline Vec operator+=(Vec& a, const Vec& b) {
+	return a = a.plus(b);
+}
+inline Vec operator-=(Vec& a, const Vec& b) {
+	return a = a.minus(b);
+}
+inline Vec operator*=(Vec& a, const Vec& b) {
+	return a = a.mult(b);
+}
+inline Vec operator*=(Vec& a, const float& b) {
+	return a = a.mult(b);
+}
+inline Vec operator/=(Vec& a, const Vec& b) {
+	return a = a.div(b);
+}
+inline Vec operator/=(Vec& a, const float& b) {
+	return a = a.div(b);
+}
+inline bool operator==(const Vec& a, const Vec& b) {
+	return a.equals(b);
+}
+inline bool operator!=(const Vec& a, const Vec& b) {
+	return !a.equals(b);
+}
+
+
+// Operator overloads for Rect
+inline bool operator==(const Rect& a, const Rect& b) {
+	return a.equals(b);
+}
+inline bool operator!=(const Rect& a, const Rect& b) {
+	return !a.equals(b);
 }
 
 
