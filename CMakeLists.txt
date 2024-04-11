@@ -32,7 +32,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBraids/libsamplerate ${C
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBraids)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiClouds)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiElements)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiGrids)
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiGrids)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiMu)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiOmi)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiPlaits)
