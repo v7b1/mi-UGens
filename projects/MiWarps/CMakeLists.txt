@@ -1,8 +1,9 @@
-cmake_minimum_required (VERSION 3.8)
-project (MiWarps)
+
+set(project_name "MiWarps")
+project (${project_name})
 
 # paths to our sources
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
+set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
 set(MI_PATH ${MUTABLE_PATH}/warps)
 # set(LIBSR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/build")
@@ -74,4 +75,6 @@ endif()
 
 
 # target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBSR_PATH}/libsamplerate.a)
+
+install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
 

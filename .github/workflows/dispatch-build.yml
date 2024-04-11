@@ -1,7 +1,6 @@
+name: dispatch-build
+
 on:
-  #push:
-   # tags:
-    #  - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
 
 jobs:
@@ -10,7 +9,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-18.04, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +23,7 @@ jobs:
 
     - name: Get SC source code
       run: git clone https://github.com/supercollider/supercollider.git ${{github.workspace}}/supercollider
-      
+    
     # for windows we have to explicitly add the libsamplerate build job here, for some reason...
     - name: build_libsamplerate_win
       if: matrix.os == 'windows-latest'

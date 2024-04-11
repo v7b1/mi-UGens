@@ -1,13 +1,17 @@
-cmake_minimum_required (VERSION 3.8)
-project (MiBraids)
+
+set(project_name "MiBraids")
+project (${project_name})
+
 
 # paths to our sources
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
+set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
 set(STMLIB_PATH ${MUTABLE_PATH}/stmlib)
 set(MI_PATH ${MUTABLE_PATH}/braids)
-# set(LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../libs")
+
 set(LIBSR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/build/src")
 set(LIBSRI_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate/include")
+
+#set(LIBSR_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../build/projects/MiBraids/libsamplerate/src")
 
 include_directories(${SC_PATH}/include/plugin_interface)
 include_directories(${SC_PATH}/include/common)
@@ -84,4 +88,8 @@ if(MSVC)
 else()
         target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBSR_PATH}/libsamplerate.a)
 endif()
+
+
+install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
+
 

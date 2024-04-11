@@ -1,4 +1,3 @@
-cmake_minimum_required (VERSION 3.8)
 
 set(project_name "MiGrids")
 project (${project_name})
