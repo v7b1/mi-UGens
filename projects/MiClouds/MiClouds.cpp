@@ -220,7 +220,7 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
     p->pitch = smoothed_value[PARAM_PITCH];
     
     
-    for(auto i=1; i<PARAM_CHANNEL_LAST; ++i) {
+    for(int i=1; i<PARAM_CHANNEL_LAST; ++i) {
         float value = IN0(i);
         CONSTRAIN(value, 0.0f, 1.0f);
         smoothed_value[i] += coef * (value - smoothed_value[i]);
@@ -253,7 +253,7 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
     
     for(int count = 0; count < vs; count += kAudioBlockSize) {
         
-        for(auto i=0; i<kAudioBlockSize; ++i) {
+        for(int i=0; i<kAudioBlockSize; ++i) {
             input[i].l = IN(kNumArgs)[i + count] * in_gain;
             input[i].r = IN(kNumArgs+1)[i + count] * in_gain;
         }
@@ -265,7 +265,7 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
                 break;
             case 2 :
                 float sum = 0.f;
-                for(auto i=0; i<kAudioBlockSize; ++i) {
+                for(int i=0; i<kAudioBlockSize; ++i) {
                     sum += ( trig_in[i+count] );
                 }
                 trigger = ( sum > 0.f );
@@ -282,7 +282,7 @@ void MiClouds_next( MiClouds *unit, int inNumSamples )
         if(p->trigger)
             p->trigger = false;
         
-        for(auto i=0; i<kAudioBlockSize; ++i) {
+        for(int i=0; i<kAudioBlockSize; ++i) {
             outL[i + count] = output[i].l;
             outR[i + count] = output[i].r;
         }
