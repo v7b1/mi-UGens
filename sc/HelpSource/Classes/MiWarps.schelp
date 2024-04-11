@@ -54,7 +54,7 @@ EXAMPLES::
 code::
 
 // first Test: internal sawtooth
-{MiWarps.ar(osc: 3, freq: 71, mul: 0.5)}.play;
+{MiWarps.ar(osc: 3, freq: 71) * 0.5}.play;
 
 
 // algo:0 -- simple xfade between carrier and modulator
@@ -68,14 +68,14 @@ code::
 
 
 // LEV1 and LEV2 are clipped internally between 0 and 1
-// at around 0.6 saturation saturation becomes audible
+// at around 0.6 saturation becomes audible
 (
 {
 	var lev1 = SinOsc.kr(0.31, 0, 0.8);
 	var lev2 = SinOsc.kr(0.5, 0, 0.8);
 	var car = SinOsc.ar(400);
 	var mod = SinOsc.ar(300);
-	var out = MiWarps.ar(car, mod, lev1: lev1, lev2: lev2, algo: 0, timb: 0.5, mul: 0.5);
+	var out = MiWarps.ar(car, mod, lev1: lev1, lev2: lev2, algo: 0, timb: 0.5) * 0.5;
 	out[0]!2
 }.play;
 )
@@ -96,7 +96,7 @@ code::
 // if internal oscillator is used: second output holds carrier
 (
 {
-	var out = MiWarps.ar(osc: 2, freq: 250, mul: 0.5);
+	var out = MiWarps.ar(osc: 2, freq: 250) * 0.5;
 	out[1]!2
 }.play;
 )
@@ -207,7 +207,8 @@ code::
 )
 
 
-(  // algo:2 -- analog RM with internal osc (tri)
+// algo:2 -- analog RM with internal osc (tri)
+(
 {
 	var timb = SinOsc.kr(0.1).range(0, 1);
 	var out = MiWarps.ar(0, SinOsc.ar(125), lev2: 0.6, algo: 2, timb: timb, osc: 2, freq: 75);
@@ -216,7 +217,8 @@ code::
 )
 
 
-(  // algo:3 -- digital RM with internal osc (tri)
+// algo:3 -- digital RM with internal osc (tri)
+(
 {
 	var timb = SinOsc.kr(0.1).range(0, 1);
 	var out = MiWarps.ar(0, SinOsc.ar(125), lev2: 0.6, algo: 3, timb: timb, osc: 2, freq: 75);
@@ -225,7 +227,8 @@ code::
 )
 
 
-(  // algo:4 -- XOR with internal osc (saw)
+// algo:4 -- XOR with internal osc (saw)
+(
 {
 	var timb = SinOsc.kr(0.3).range(0, 1);
 	var out = MiWarps.ar(0, SinOsc.ar(125), lev2: 0.6, algo: 4, timb: timb, osc: 3, freq: 75);
@@ -234,7 +237,8 @@ code::
 )
 
 
-(  // algo:5 -- COMPARATOR with internal osc (sin)
+// algo:5 -- COMPARATOR with internal osc (sin)
+(
 {
 	var timb = SinOsc.kr(0.3).range(0, 1);
 	var out = MiWarps.ar(0, SinOsc.ar(125), lev2: 0.6, algo: 5, timb: timb, osc: 1, freq: 75);
@@ -243,7 +247,8 @@ code::
 )
 
 
-(   // scan through all cross-modulation algos
+// scan through all cross-modulation algos
+(
 {
 	var algo = SinOsc.kr(0.1).range(0, 5.5);
 	var timbre = SinOsc.kr(0.297, 0, 0.5, 0.5);
