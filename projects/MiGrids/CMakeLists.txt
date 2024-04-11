@@ -3,7 +3,7 @@ set(project_name "MiGrids")
 project (${project_name})
 
 # paths to our sources
-set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
+set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../eurorack")
 set(AVRLIB_PATH ${MUTABLE_PATH}/avrlib)
 set(MI_PATH ${MUTABLE_PATH}/grids)
 
