@@ -2,7 +2,6 @@
 set(project_name "MiBraids")
 project (${project_name})
 
-set_property(TARGET ${project_name} PROPERTY CXX_STANDARD 17)
 
 # paths to our sources
 set(MUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../eurorack")
