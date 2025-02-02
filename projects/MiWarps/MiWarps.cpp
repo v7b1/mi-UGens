@@ -101,7 +101,6 @@ static void MiWarps_Dtor(MiWarps *unit) {
 }
 
 
-#pragma mark ----- dsp loop -----
 
 void MiWarps_next( MiWarps *unit, int inNumSamples)
 {
