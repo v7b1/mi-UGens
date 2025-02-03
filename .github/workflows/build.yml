@@ -13,7 +13,7 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
@@ -108,3 +108,4 @@ jobs:
         file: ${{github.workspace}}/build/mi-UGens-${{runner.os}}.zip
         asset_name: mi-UGens-${{runner.os}}.zip
         tag: ${{ github.ref }}
+        overwrite: true

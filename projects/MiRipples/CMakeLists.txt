@@ -11,19 +11,19 @@ include_directories(${SC_PATH}/external_libraries/libsndfile/)
 set(VCV_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack")
 set(VCV_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/vcvrack/include")
 
-# specify the C++ standard
-#set(CMAKE_CXX_STANDARD 11)
-#set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 
 if(MSVC)
     add_definitions(-D_USE_MATH_DEFINES) # defines M_PI with MSVC
+	# specify the C++ standard
+	set(CMAKE_CXX_STANDARD 11)
+	set(CMAKE_CXX_STANDARD_REQUIRED True)
 endif()
 
 set(VCV_SOURCES 
 	${VCV_PATH}/Ripples/aafilter.hpp
 	${VCV_PATH}/Ripples/ripples.hpp
 	${VCV_PATH}/Ripples/sos.hpp
-	#${VCV_PATH}/src/random.cpp
 )
 
 
