@@ -196,16 +196,16 @@ class Algorithms {
 };
 
 /* static */
-template<> const uint8_t Algorithms<4>::opcodes_[][4];  // From DX100
+template<> const uint8_t Algorithms<4>::opcodes_[8][4];  // From DX100
 
 /* static */
-template<> const Algorithms<4>::RendererSpecs Algorithms<4>::renderers_[];
+template<> const Algorithms<4>::RendererSpecs Algorithms<4>::renderers_[7];
 
 /* static */
-template<> const uint8_t Algorithms<6>::opcodes_[][6];  // From DX7
+template<> const uint8_t Algorithms<6>::opcodes_[32][6];  // From DX7
 
 /* static */
-template<> const Algorithms<6>::RendererSpecs Algorithms<6>::renderers_[];
+template<> const Algorithms<6>::RendererSpecs Algorithms<6>::renderers_[9];
 
 }  // namespace fm
 
