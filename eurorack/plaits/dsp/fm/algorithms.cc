@@ -403,7 +403,7 @@ const uint8_t Algorithms<6>::opcodes_[32][6] = {
 
 /* static */
 template<>
-const Algorithms<4>::RendererSpecs Algorithms<4>::renderers_[] = {
+const Algorithms<4>::RendererSpecs Algorithms<4>::renderers_[7] = {
   // Core
   INSTANTIATE_RENDERER(1, -2, false),
   INSTANTIATE_RENDERER(1, -2, true),
@@ -424,7 +424,7 @@ const Algorithms<4>::RendererSpecs Algorithms<4>::renderers_[] = {
 
 /* static */
 template<>
-const Algorithms<6>::RendererSpecs Algorithms<6>::renderers_[] = {
+const Algorithms<6>::RendererSpecs Algorithms<6>::renderers_[9] = {
   // Core
   INSTANTIATE_RENDERER(1, -2, false),
   INSTANTIATE_RENDERER(1, -2, true),
