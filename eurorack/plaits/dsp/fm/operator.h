@@ -75,7 +75,7 @@ void RenderOperators(
     const float* modulation,
     float* out,
     size_t size) {
-  float previous_0, previous_1;
+    float previous_0 = 0.0f, previous_1 = 0.0f;
   
   if (modulation_source >= Operator::MODULATION_SOURCE_FEEDBACK) {
     previous_0 = fb_state[0];
