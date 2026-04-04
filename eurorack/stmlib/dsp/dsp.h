@@ -74,6 +74,10 @@ inline float InterpolateWrap(const float* table, float index, float size) {
   return a + (b - a) * index_fractional;
 }
 
+inline float SmoothStep(float value) {
+  return value * value * (3.0f - 2.0f * value);
+}
+
 #define ONE_POLE(out, in, coefficient) out += (coefficient) * ((in) - out);
 #define SLOPE(out, in, positive, negative) { \
   float error = (in) - out; \
@@ -129,32 +133,14 @@ inline float SoftClip(float x) {
   }
 #else
   inline int32_t Clip16(int32_t x) {
-    /*
-     int32_t result;
+    int32_t result;
     __asm ("ssat %0, %1, %2" : "=r" (result) :  "I" (16), "r" (x) );
     return result;
-     */
-      if (x < -32768) {
-          return -32768;
-      } else if (x > 32767) {
-          return 32767;
-      } else {
-          return x;
-      }
-
   }
   inline uint32_t ClipU16(int32_t x) {
-      /*
     uint32_t result;
     __asm ("usat %0, %1, %2" : "=r" (result) :  "I" (16), "r" (x) );
-    return result;*/
-      if (x < 0) {
-          return 0;
-      } else if (x > 65535) {
-          return 65535;
-      } else {
-          return x;
-      }
+    return result;
   }
 #endif
   
@@ -164,8 +150,8 @@ inline float SoftClip(float x) {
   }
 #else
   inline float Sqrt(float x) {
-    float result = sqrtf(x);
-    //__asm ("vsqrt.f32 %0, %1" : "=w" (result) : "w" (x) );
+    float result;
+    __asm ("vsqrt.f32 %0, %1" : "=w" (result) : "w" (x) );
     return result;
   }
 #endif

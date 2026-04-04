@@ -80,6 +80,13 @@ static void MiPlaits_Ctor(MiPlaits *unit) {
     unit->octave_ = 0.5;
     unit->patch.note = 48.0;
     unit->patch.harmonics = 0.1;
+    unit->patch.decay = 0.333;
+    unit->patch.morph = 0.0;
+    unit->patch.timbre = 0.0;
+    unit->patch.lpg_colour = 0.5;
+    unit->patch.frequency_modulation_amount = 0.0;
+    unit->patch.timbre_modulation_amount = 0.0;
+    unit->patch.morph_modulation_amount = 0.0;
         
     
     // allocate memory
@@ -153,7 +160,7 @@ void MiPlaits_next( MiPlaits *unit, int inNumSamples)
     unit->patch.note = pitch;
     
     int engine = int(engine_in);
-    CONSTRAIN(engine, 0, 15);      // 16 engines
+    CONSTRAIN(engine, 0, 23);      // 24 engines
     unit->patch.engine = engine;
 
     CONSTRAIN(harm_in, 0.0f, 1.0f);

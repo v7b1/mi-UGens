@@ -43,7 +43,7 @@ static inline uint16_t fast_atan2(float y, float x) {
   uint32_t ux_s = sign_mask & unsafe_bit_cast<uint32_t, float>(x);
   uint32_t uy_s = sign_mask & unsafe_bit_cast<uint32_t, float>(y);
   uint32_t offset = ((~ux_s & uy_s) >> 29 | ux_s >> 30) << 14;
-  float bxy_a = fabs(b * x * y);
+  float bxy_a = fabsf(b * x * y);
   float num = bxy_a + y * y;
   float atan_1q = num / (x * x + bxy_a + num);
   uint32_t uatan_2q = (ux_s ^ uy_s) | unsafe_bit_cast<uint32_t, float>(atan_1q);
@@ -66,8 +66,8 @@ static inline uint16_t fast_atan2r(float y, float x, float* r) {
   uint32_t uy_s = sign_mask & unsafe_bit_cast<uint32_t, float>(y);
   uint32_t quadrant = ((~ux_s & uy_s) >> 29 | ux_s >> 30);
   uint16_t angle = 0;
-  x = fabs(x);
-  y = fabs(y);
+  x = fabsf(x);
+  y = fabsf(y);
   if (y > x) {
     angle = 16384 - atan_lut[static_cast<uint32_t>(x * rinv * 512.0f + 0.5f)];
   } else {

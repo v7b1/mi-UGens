@@ -27,6 +27,7 @@ set(STMLIB_SOURCES
 	${STMLIB_PATH}/dsp/atan.h
 	${STMLIB_PATH}/dsp/units.cc
 	${STMLIB_PATH}/dsp/units.h
+	${STMLIB_PATH}/dsp/filter.h
 
 )
 
@@ -85,6 +86,21 @@ set(MI_SOURCES
 	${MI_PATH}/dsp/engine/waveshaping_engine.h
 	${MI_PATH}/dsp/engine/wavetable_engine.cc
 	${MI_PATH}/dsp/engine/wavetable_engine.h
+	
+	${MI_PATH}/dsp/engine2/arpeggiator.h
+	${MI_PATH}/dsp/engine2/chiptune_engine.cc
+	${MI_PATH}/dsp/engine2/chiptune_engine.h
+	${MI_PATH}/dsp/engine2/phase_distortion_engine.cc
+	${MI_PATH}/dsp/engine2/phase_distortion_engine.h
+	${MI_PATH}/dsp/engine2/six_op_engine.cc
+	${MI_PATH}/dsp/engine2/six_op_engine.h
+	${MI_PATH}/dsp/engine2/string_machine_engine.cc
+	${MI_PATH}/dsp/engine2/string_machine_engine.h
+	${MI_PATH}/dsp/engine2/virtual_analog_vcf_engine.cc
+	${MI_PATH}/dsp/engine2/virtual_analog_vcf_engine.h
+	${MI_PATH}/dsp/engine2/wave_terrain_engine.cc
+	${MI_PATH}/dsp/engine2/wave_terrain_engine.h
+
 	${MI_PATH}/dsp/envelope.h
 	${MI_PATH}/dsp/fx/diffuser.h
 	${MI_PATH}/dsp/fx/fx_engine.h
@@ -116,6 +132,19 @@ set(MI_SOURCES
 	${MI_PATH}/dsp/physical_modelling/string.h
 	${MI_PATH}/dsp/physical_modelling/string_voice.cc
 	${MI_PATH}/dsp/physical_modelling/string_voice.h
+	
+	${MI_PATH}/dsp/chords/chord_bank.cc
+	${MI_PATH}/dsp/chords/chord_bank.h
+	${MI_PATH}/dsp/downsampler/4x_downsampler.h
+	${MI_PATH}/dsp/fm/algorithms.cc
+	${MI_PATH}/dsp/fm/algorithms.h
+	${MI_PATH}/dsp/fm/dx_units.cc
+	${MI_PATH}/dsp/fm/dx_units.h
+	${MI_PATH}/dsp/fm/envelope.h
+	${MI_PATH}/dsp/fm/lfo.h
+	${MI_PATH}/dsp/fm/operator.h
+	${MI_PATH}/dsp/fm/patch.h
+	${MI_PATH}/dsp/fm/voice.h
 )
 
 
@@ -136,6 +165,9 @@ add_library(MiPlaits MODULE
         ${MI_SOURCES}
         ${BUILD_SOURCES}
 )
+
+# add preprocessor macro TEST to avoid asm functions
+target_compile_definitions(${PROJECT_NAME} PUBLIC TEST)
 
 if(APPLE)
 # create groups in our project
