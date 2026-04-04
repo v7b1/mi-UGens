@@ -48,7 +48,7 @@ extern const float* const lookup_table_table[];
 
 extern const int16_t* const lookup_table_i16_table[];
 
-extern const int32_t* const lookup_table_i32_table[];
+//extern const int32_t* const lookup_table_i32_table[];
 
 extern const int8_t* const lookup_table_i8_table[];
 
