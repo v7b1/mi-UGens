@@ -72,6 +72,9 @@ add_library(MiElements MODULE
         ${BUILD_SOURCES}
 )
 
+# add preprocessor macro TEST to avoid asm functions
+target_compile_definitions(${PROJECT_NAME} PUBLIC TEST)
+
 if(APPLE)
 # create groups in our project
 source_group(TREE ${MUTABLE_PATH} FILES ${STMLIB_SOURCES} ${MI_SOURCES})

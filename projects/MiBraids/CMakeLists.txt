@@ -75,6 +75,8 @@ add_library(MiBraids MODULE
         ${BUILD_SOURCES}
 )
 
+# add preprocessor macro TEST to avoid asm functions
+target_compile_definitions(${PROJECT_NAME} PUBLIC TEST)
 
 if(APPLE)
 # create groups in our project

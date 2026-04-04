@@ -17,4 +17,7 @@ add_library(MiMu MODULE
         MiMu.cpp
 )
 
+# add preprocessor macro TEST to avoid asm functions
+target_compile_definitions(${PROJECT_NAME} PUBLIC TEST)
+
 install(TARGETS ${project_name} LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})

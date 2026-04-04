@@ -47,6 +47,9 @@ include_directories(
     	endif()
 )
 
+# add preprocessor macro TEST to avoid asm functions
+target_compile_definitions(${PROJECT_NAME} PUBLIC TEST)
+
 if(APPLE)
 # create groups in our project
 source_group(TREE ${VCV_PATH} FILES ${VCV_SOURCES})
