@@ -83,22 +83,47 @@ struct Item<RESOLUTION_16_BIT, 2> {
   int16_t r;
 };
 
+// MiBeads: the original 12-bit items are packed 12-bit bitfields, which only
+// GCC/clang on non-Windows targets lay out in 3 bytes. MSVC and MinGW use
+// 4 bytes, which overruns the delay memory. The packing below is explicit,
+// 3 bytes on every compiler, and stores the same bits as GCC's layout.
+inline void Store12Lo(uint8_t* b, int16_t v) {
+  const uint16_t u = static_cast<uint16_t>(v) & 0xfff;
+  b[0] = u & 0xff;
+  b[1] = (b[1] & 0xf0) | (u >> 8);
+}
+
+inline void Store12Hi(uint8_t* b, int16_t v) {
+  const uint16_t u = static_cast<uint16_t>(v) & 0xfff;
+  b[1] = (b[1] & 0x0f) | ((u & 0x0f) << 4);
+  b[2] = u >> 4;
+}
+
+inline int16_t Load12Lo(const uint8_t* b) {
+  const uint16_t u = b[0] | ((b[1] & 0x0f) << 8);
+  return static_cast<int16_t>(u << 4) >> 4;
+}
+
+inline int16_t Load12Hi(const uint8_t* b) {
+  const uint16_t u = (b[1] >> 4) | (b[2] << 4);
+  return static_cast<int16_t>(u << 4) >> 4;
+}
+
 template<>
 struct Item<RESOLUTION_12_BIT, 2> {
   void Store(int i, FloatFrame s) {
-    l = stmlib::Clip16(static_cast<int32_t>(s.l * 32768.0f)) >> 4;
-    r = stmlib::Clip16(static_cast<int32_t>(s.r * 32768.0f)) >> 4;
+    Store12Lo(b, stmlib::Clip16(static_cast<int32_t>(s.l * 32768.0f)) >> 4);
+    Store12Hi(b, stmlib::Clip16(static_cast<int32_t>(s.r * 32768.0f)) >> 4);
   }
   inline FloatFrame value(int i) const {
     FloatFrame result;
-    result.l = static_cast<float>(l) / 2048.0f;
-    result.r = static_cast<float>(r) / 2048.0f;
+    result.l = static_cast<float>(Load12Lo(b)) / 2048.0f;
+    result.r = static_cast<float>(Load12Hi(b)) / 2048.0f;
     return result;
   }
   enum { bundle_size = 1 };
-  int16_t l : 12;
-  int16_t r : 12;
-} __attribute__((packed));
+  uint8_t b[3];  // l: bits 0-11, r: bits 12-23
+};
 
 template<>
 struct Item<RESOLUTION_12_BIT, 1> {
@@ -106,20 +131,19 @@ struct Item<RESOLUTION_12_BIT, 1> {
     int16_t lr = \
         stmlib::Clip16(static_cast<int32_t>((s.l + s.r) * 16384.0f)) >> 4;
     if (i) {
-      odd = lr;
+      Store12Lo(b, lr);  // odd
     } else {
-      even = lr;
+      Store12Hi(b, lr);  // even
     }
   }
   inline FloatFrame value(int i) const {
     FloatFrame result;
-    result.l = result.r = static_cast<float>(i ? odd : even) / 2048.0f;
+    result.l = result.r = static_cast<float>(i ? Load12Lo(b) : Load12Hi(b)) / 2048.0f;
     return result;
   }
   enum { bundle_size = 2 };
-  int16_t odd : 12;
-  int16_t even : 12;
-} __attribute__((packed));
+  uint8_t b[3];  // odd: bits 0-11, even: bits 12-23
+};
 
 template<>
 struct Item<RESOLUTION_8_BIT, 1> {
@@ -152,6 +176,12 @@ struct Item<RESOLUTION_8_BIT, 2> {
   uint8_t l;
   uint8_t r;
 };
+
+// MiBeads: the delay memory layout depends on these sizes.
+static_assert(sizeof(Item<RESOLUTION_12_BIT, 2>) == 3, "12-bit stereo item must be 3 bytes");
+static_assert(sizeof(Item<RESOLUTION_12_BIT, 1>) == 3, "12-bit mono item must be 3 bytes");
+static_assert(sizeof(Item<RESOLUTION_16_BIT, 2>) == 4, "16-bit stereo item must be 4 bytes");
+static_assert(sizeof(Item<RESOLUTION_8_BIT, 2>) == 2, "8-bit stereo item must be 2 bytes");
 
 enum Interpolation {
   INTERPOLATION_ZOH,

@@ -53,7 +53,7 @@ class WavetableGranularPlayer : public GranularPlayer<WavetableGrain, 32> {
       float amplitude, pan;
       ComputeGrainAmplitudeAndPan(trigger, p, &amplitude, &pan);
       
-#ifdef TEST
+#if defined(TEST) && defined(MIBEADS_DEBUG_PRINT)  // MiBeads: no printf on the audio thread
       if (!new_grain()->done()) {
         printf("stealing, duration = %d\n", new_grain()->remaining_samples());
       }

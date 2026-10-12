@@ -36,6 +36,10 @@
 
 namespace beads {
 
+// MiBeads: upper bound for processing block sizes, replaces variable length
+// arrays (not supported by MSVC). The module uses at most 12 frames.
+const size_t kMaxBlockSize = 32;
+
 enum SeedButtonState {
   SEED_BUTTON_STATE_OFF,
   SEED_BUTTON_STATE_ON,

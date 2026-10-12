@@ -44,9 +44,11 @@ typedef uint8_t ResourceId;
 
 extern const float* lookup_table_table[];
 
-extern const int16_t* lookup_table_i16_table[];
+// MiBeads: empty, removed for MSVC (see resources.cc).
+// extern const int16_t* lookup_table_i16_table[];
 
-extern const int8_t* lookup_table_i8_table[];
+// MiBeads: empty, removed for MSVC (see resources.cc).
+// extern const int8_t* lookup_table_i8_table[];
 
 extern const int16_t* wavetables_table[];
 

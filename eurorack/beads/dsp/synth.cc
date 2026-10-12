@@ -69,7 +69,7 @@ void Synth::Render(
   float expo_fm_amount = 20.0f * (fabsf(density.base - 0.5f) - 0.225f);
   CONSTRAIN(expo_fm_amount, 0.0f, 1.0f);
 
-  TriggerGenerator::Output triggers[size];
+  TriggerGenerator::Output triggers[kMaxBlockSize];
   trigger_generator_.Render(
       seed_button_state,
       seed_input,

@@ -163,13 +163,13 @@ class GranularProcessor {
     } else {
       size_t d_size = size / size_t(ratio);
 
-      bool d_freeze[d_size];
-      TriggerGenerator::Output d_triggers[d_size];
-      DelayController::Output d_taps[d_size];
-      FloatFrame d_in[d_size];
-      FloatFrame d_out[d_size];
-      float downsampled[d_size];
-      float upsampled[size];
+      bool d_freeze[kMaxBlockSize];
+      TriggerGenerator::Output d_triggers[kMaxBlockSize];
+      DelayController::Output d_taps[kMaxBlockSize];
+      FloatFrame d_in[kMaxBlockSize];
+      FloatFrame d_out[kMaxBlockSize];
+      float downsampled[kMaxBlockSize];
+      float upsampled[kMaxBlockSize];
 
       DownsampleGate(freeze, d_freeze, size);
       

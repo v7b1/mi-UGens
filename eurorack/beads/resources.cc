@@ -365,13 +365,15 @@ const float* lookup_table_table[] = {
 
 
 
-const int16_t* lookup_table_i16_table[] = {
-};
+// MiBeads: empty table, zero-size arrays do not compile with MSVC (unused).
+// const int16_t* lookup_table_i16_table[] = {
+// };
 
 
 
-const int8_t* lookup_table_i8_table[] = {
-};
+// MiBeads: empty table, zero-size arrays do not compile with MSVC (unused).
+// const int8_t* lookup_table_i8_table[] = {
+// };
 
 const int16_t wav_integrated_waves[] = {
   -20784, -20822, -20847, -20860,
