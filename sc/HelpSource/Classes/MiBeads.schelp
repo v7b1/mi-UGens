@@ -1,0 +1,183 @@
+TITLE:: MiBeads
+summary:: granular texture processor, delay and wavetable synth
+categories:: UGens>Buffer, UGens>Generators>Granular
+related:: Classes/MiClouds, Classes/TGrains
+
+DESCRIPTION::
+MiBeads is a granular audio processor. It records into an internal buffer and plays it back as overlapping, transposed and enveloped grains. Above a grain size of 0.99 it turns into a multitap delay. With no input it can run the module's wavetable synth.
+
+note::
+MiBeads is based on mutable instruments' Beads eurorack module, designed by Émilie Gillet - link::https://pichenettes.github.io/mutable-instruments-documentation/modules/beads/::. All of the signal processing is her original code, © Émilie Gillet, MIT license - link::https://github.com/pichenettes/eurorack/tree/master/beads:: ::
+
+Please refer to the original Beads manual for indepth information: link::https://pichenettes.github.io/mutable-instruments-documentation/modules/beads/manual/::
+
+section:: Credits and history
+
+Émilie Gillet founded Mutable Instruments and, starting with the Shruthi-1, published the firmware and hardware designs of her instruments. That openness is the reason her modules could travel beyond Eurorack: into VCV Rack as Audible Instruments, into SuperCollider and Max through Volker Böhm's mi-UGens and vb.mi ports, into Tidal through mi-UGens, and into alternative firmware, DIY builds and other instruments.
+
+Beads, the successor to Clouds, was announced in February 2021 and was the last module she designed before Mutable Instruments closed at the end of 2022. It was also the last Mutable source to be published, on October 12, 2026, under the MIT license. MiBeads was written in response to that release and follows the structure of Volker Böhm's MiClouds.
+
+MiBeads is not affiliated with or endorsed by Mutable Instruments. "Mutable Instruments" is a registered trademark.
+
+Further reading: link::https://cdm.link/beads-is-now-open-source/::, link::https://www.perfectcircuit.com/signal/mutable-instruments-retrospective::
+
+section:: Notes on this port
+
+Beads runs its codec at a different sample rate for each quality setting. MiBeads keeps that internal rate and resamples to and from the server rate. With a 48 kHz server and quality 0 or 2 no resampling happens. The module's automatic gain control is not ported; use code::in_gain::.
+
+The buffer starts empty and code::time:: is a position in it, therefore with long buffers (dirty tape, mono) grains stay silent until enough has been recorded.
+
+Each instance allocates about 1 MB of real time memory. Raise code::s.options.memSize:: when running several.
+
+CLASSMETHODS::
+
+METHOD:: ar
+
+ARGUMENT:: in
+Audio input. One channel switches Beads to mono, which doubles the buffer length. Two channels for stereo. Ignored in synth mode, can be nil.
+
+ARGUMENT:: pitch
+Grain transposition in semitones (-84. -- 84.)
+
+ARGUMENT:: pitch_rnd
+Pitch randomness, the attenuverter of the module with nothing patched (-1. -- 1.)
+Positive values randomise every grain by up to that amount (24 semitones each way at 1). Negative values pick a different depth per grain, so some grains stay near the base pitch and some jump far. In delay mode it drives a random walk of the tape speed. The knob curve of the hardware is not applied.
+
+ARGUMENT:: time
+Playback position in the internal buffer, how far back grains read (0. -- 1.)
+In delay mode, the delay time.
+
+ARGUMENT:: time_rnd
+Time randomness (-1. -- 1.), same logic as pitch_rnd.
+
+ARGUMENT:: size
+Grain size (0. -- 1.)
+Above 0.99 Beads crossfades into delay mode over 1.5 seconds.
+
+ARGUMENT:: size_rnd
+Size randomness (-1. -- 1.), same logic as pitch_rnd. In delay mode it sets the bandwidth of the repeats.
+
+ARGUMENT:: shape
+Grain envelope shape (0. -- 1.)
+In delay mode, the tap pattern.
+
+ARGUMENT:: shape_rnd
+Shape randomness (-1. -- 1.), same logic as pitch_rnd.
+
+ARGUMENT:: density
+Grain density (0. -- 1.)
+From 0 to 0.48 regular grains, faster toward 0. From 0.48 to 0.52 no grains, use seed or seed_btn. From 0.52 to 1 random grains, more toward 1.
+With a seed signal and seed_btn 2, the left half selects a clock divider and the right half a probability.
+
+ARGUMENT:: fb
+Feedback amount (0. -- 1.)
+
+ARGUMENT:: drywet
+Dry wet crossfader (0. -- 1.)
+
+ARGUMENT:: rvb
+Reverb amount (0. -- 1.)
+
+ARGUMENT:: freeze
+Freeze on/off. When on, the buffer stops recording.
+
+ARGUMENT:: seed
+Gate or trigger input for grains. A non-positive to positive transition starts a grain.
+A constant number (the default) counts as unpatched, like on the module. Any UGen or control, including a SynthDef argument, counts as patched, therefore only pass seed when there is a trigger source.
+
+ARGUMENT:: seed_btn
+State of the SEED button (0 -- 2):
+0: released,
+1: held down,
+2: latched.
+The module powers up latched, which is what lets density generate grains on its own.
+
+ARGUMENT:: quality
+Recording quality (0 -- 3), buffer length in stereo, doubled in mono:
+0: hi-fi, 48 kHz 16-bit, 4 s,
+1: vintage digital, 32 kHz 12-bit, 8 s,
+2: clean tape, 12-bit processed at 24 kHz, 10.7 s,
+3: dirty tape, 24 kHz 8-bit mu-law with wow and flutter, 16 s.
+Changing quality fades out, resets the buffer and fades in, like the module.
+
+ARGUMENT:: in_gain
+Input gain (0. -- 40.)
+Quality 3 always soft clips, quality 2 crossfades into soft clipping when driven, 0 and 1 clip hard at 1.
+
+ARGUMENT:: synth
+Wavetable synth mode on/off. The input is ignored and quality selects the bit depth.
+
+ARGUMENT:: mul
+
+ARGUMENT:: add
+
+returns:: left and right audio channel
+
+
+EXAMPLES::
+
+code::
+
+s.options.memSize = 65536;
+s.reboot;
+
+b = Buffer.read(s, Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
+
+
+(  // basic granulation
+x = {
+	var input = PlayBuf.ar(1, b, 1, loop: 1);
+	MiBeads.ar(input, pitch: 0, pitch_rnd: 0.2, time: 0.1, size: 0.4,
+		density: 0.8, drywet: 1, rvb: 0.3);
+}.play
+)
+
+x.free
+
+
+(  // freeze and random time
+x = { |freeze=0|
+	var input = PlayBuf.ar(1, b, 1, loop: 1) ! 2;
+	MiBeads.ar(input, time: 0.3, time_rnd: 0.5, size: 0.3, shape: 0.2,
+		density: 0.85, drywet: 1, rvb: 0.4, freeze: freeze);
+}.play
+)
+
+x.set(\freeze, 1)
+x.set(\freeze, 0)
+x.free
+
+
+(  // external clock through the divider, dirty tape
+x = {
+	var input = PlayBuf.ar(1, b, 1, loop: 1);
+	var clock = Trig.ar(Impulse.ar(8), 0.02);
+	MiBeads.ar(input, time: 0.05, size: 0.3, density: 0.3, seed: clock, seed_btn: 2,
+		quality: 3, drywet: 1);
+}.play
+)
+
+x.free
+
+
+(  // delay mode
+x = {
+	var input = PlayBuf.ar(1, b, 1, loop: 1);
+	MiBeads.ar(input, time: 0.3, size: 1, shape: 0.6, fb: 0.6, drywet: 0.6, rvb: 0.3);
+}.play
+)
+
+x.free
+
+
+(  // wavetable synth
+x = {
+	MiBeads.ar(nil, pitch: LFNoise0.kr(1).range(-12, 12), shape: 0.3,
+		density: 0.85, rvb: 0.5, synth: 1);
+}.play
+)
+
+x.free
+b.free
+
+::

@@ -37,6 +37,7 @@ option(BUILD_TESTING "libsamplerate: run testing" OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBraids/libsamplerate ${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBraids/libsamplerate/build)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBraids)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiBeads)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiClouds)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiElements)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/projects/MiGrids)
